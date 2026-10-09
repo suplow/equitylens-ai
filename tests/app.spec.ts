@@ -106,8 +106,9 @@ test("all destinations retain symbol and incomplete features are honest", async 
     page.getByRole("textbox", { name: "Câu hỏi cho AI Analyst" }),
   ).toHaveValue("Giải thích ROE và giới hạn khi sử dụng chỉ số này.");
   await expect(
-    page.getByRole("button", { name: "Gửi câu hỏi" }),
-  ).toBeDisabled();
+    page.getByRole("button", { name: "Tạo hồ sơ nghiên cứu", exact: true }),
+  ).toBeEnabled();
+  await expect(page.getByText("KHÔNG CẦN API KEY", { exact: true })).toBeVisible();
   await page
     .getByRole("link", { name: "Báo cáo nghiên cứu", exact: true })
     .click();

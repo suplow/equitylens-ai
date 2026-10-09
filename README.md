@@ -1,8 +1,14 @@
-# EquityLens AI — Phase 1
+# EquityLens AI — Local Research Workspace
 
 Dashboard nghiên cứu cổ phiếu Việt Nam, chạy cục bộ với Next.js, TypeScript, Tailwind CSS, shadcn-compatible Button, Recharts và Zod.
 
-**Mọi giá và số liệu tài chính đều là mock. Không có dữ liệu thị trường thực, kết quả định giá hay phân tích do AI tạo.** Các fixture gắn nguồn `EquityLens · Bộ dữ liệu minh họa v1` và mốc minh họa 30/09/2026. Mốc này không phải thời gian đồng bộ thị trường.
+**Giá và số liệu có sẵn ở dashboard/tài chính đều là mock.** Chưa có dữ liệu thị trường được đồng bộ hay kết quả định giá. Các fixture gắn nguồn `EquityLens · Bộ dữ liệu minh họa v1` và mốc minh họa 30/09/2026.
+
+**AI Analyst hiện có luồng dùng tài khoản ChatGPT sẵn có, chuyển hồ sơ thủ công:** chuẩn bị nguồn tại local → copy/download sang ChatGPT → dán JSON phản hồi về để kiểm tra cấu trúc và ID nguồn. Mặc định loại số mock khỏi hồ sơ; nguồn tự nhập luôn chưa xác minh. Web chạy local nhưng ChatGPT xử lý trực tuyến. Không cần API key và không tự gửi dữ liệu.
+
+- [Yêu cầu nghiên cứu của agent tài chính](docs/research/AI_EQUITY_REQUIREMENTS.md)
+- [Handoff từ agent cầu nối sang thiết kế](docs/research/PRODUCT_HANDOFF.md)
+- [Cách dùng ChatGPT và giới hạn kết nối](docs/research/CHATGPT_LOCAL_WORKFLOW.md)
 
 ## Chạy trên máy
 
@@ -11,7 +17,7 @@ Dashboard nghiên cứu cổ phiếu Việt Nam, chạy cục bộ với Next.js
 ```powershell
 cd "C:\Users\khoa\Documents\Codex\2026-10-09\h-y\outputs\equitylens-ai"
 npm ci
-npm run dev -- --hostname 127.0.0.1
+npm run dev
 ```
 
 Mở http://127.0.0.1:3000. Nếu cổng đang được sử dụng, xem terminal hoặc chọn `--port 3001`.
@@ -26,7 +32,7 @@ Không cần API key, database hoặc dịch vụ trả phí. Chưa deploy produ
 - Watchlist thêm/bỏ mã, lưu bằng localStorage trên trình duyệt. Không đồng bộ tài khoản.
 - Financial Analysis: ba bảng báo cáo rút gọn, bốn năm mock, biểu đồ so sánh và chỉ số minh họa.
 - Valuation: khung phương pháp và kịch bản, kết quả để trống, chưa cho nhập giả định.
-- AI Analyst: soạn câu hỏi và chọn gợi ý; nút gửi bị vô hiệu hóa và không có request AI.
+- AI Analyst: nhập nguồn có kỳ/ngày/trang, tạo snapshot, xuất prompt cho ChatGPT, nhập JSON và kiểm tra mã/snapshot/source IDs. Không xác minh sự thật; phản hồi luôn cần đối chiếu tài liệu.
 - Research Reports: đủ bảy phần của bản mẫu; xuất PDF chưa được triển khai.
 - Sidebar desktop, menu mobile, focus states, điều hướng bàn phím, bảng cuộn ngang trong vùng chứa.
 - Data Provider Interface để thay fixture bằng adapter được cấp phép ở Phase 4.
@@ -85,7 +91,7 @@ Bốn lớp dữ liệu tương lai (`verified`, `calculated`, `assumption`, `in
 ## Các phase tiếp theo
 
 1. Phase 2: schema đầy đủ và riêng cho ngành cần thiết; công thức ratio, DCF/phương pháp phù hợp, kịch bản và sensitivity; unit tests cho công thức và trường hợp thiếu dữ liệu.
-2. Phase 3: API backend, OpenAI server-only, đối chiếu citation với source allowlist, kiểm chứng số liệu, phân biệt suy luận và dữ kiện; kiểm tra prompt injection. Những cơ chế này **chưa được triển khai** ở Phase 1.
+2. AI tự động: có thể đánh giá Codex SDK/app-server đăng nhập ChatGPT sau khi cấu hình và kiểm thử; chưa triển khai. Theo lựa chọn hiện tại không dùng API trả phí. Luồng thủ công đã có kiểm tra schema/source IDs, nhưng kiểm chứng số liệu và nội dung citation chưa được triển khai.
 3. Phase 4: kiểm chứng nguồn dữ liệu Việt Nam và giấy phép; adapter thực, lưu trữ và lịch cập nhật khi cần.
 4. Báo cáo hoàn chỉnh và xuất PDF cần triển khai thêm sau khi có dữ liệu và quy trình trích dẫn.
 

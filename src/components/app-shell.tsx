@@ -189,14 +189,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mock-banner">
             <FlaskConical size={15} />
             <span>
-              <strong>DỮ LIỆU MINH HỌA</strong>
+              <strong>{section === "analyst" ? "HỒ SƠ NGHIÊN CỨU LOCAL" : "DỮ LIỆU MINH HỌA"}</strong>
               <span className="banner-detail">
                 {" "}
-                · Tất cả giá và số liệu tài chính đều là giả lập, không dùng để
-                ra quyết định đầu tư.
+                {section === "analyst"
+                  ? "· Tài liệu tự nhập chưa được xác minh. Số liệu demo không tự đưa vào hồ sơ."
+                  : "· Tất cả giá và số liệu tài chính đều là giả lập, không dùng để ra quyết định đầu tư."}
               </span>
             </span>
-            <span className="banner-date">30.09.2026</span>
+            <span className="banner-date">{section === "analyst" ? "LOCAL WORKSPACE" : "30.09.2026"}</span>
           </div>
           {children}
           <footer>
@@ -204,7 +205,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               EquityLens AI <span className="footer-dot">/</span> Fundamental
               research workspace
             </span>
-            <span>Dữ liệu minh họa · Không phải khuyến nghị đầu tư</span>
+            <span>{section === "analyst" ? "Hồ sơ chưa xác minh · Không phải khuyến nghị đầu tư" : "Dữ liệu minh họa · Không phải khuyến nghị đầu tư"}</span>
           </footer>
         </main>
       </div>
