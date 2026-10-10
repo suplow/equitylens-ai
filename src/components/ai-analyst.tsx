@@ -63,9 +63,9 @@ function EvidenceEditor({ onAdd, onChange, disabled }: {
         <label className="rw-field">Vị trí trích dẫn
           <input required minLength={2} maxLength={200} value={draft.locator} onChange={(e) => update("locator", e.target.value)} placeholder="Ví dụ: Trang 12, Thuyết minh số 8" />
         </label>
-        <label className="rw-field">Nội dung trích từ tài liệu
-          <textarea required minLength={20} rows={6} maxLength={12000} value={draft.content} onChange={(e) => update("content", e.target.value)} placeholder="Dán nội dung cùng đơn vị và kỳ tương ứng. Nội dung này chưa được hệ thống xác minh." />
-        </label>
+        <div className="rw-field"><label htmlFor="source-content">Nội dung trích từ tài liệu</label>
+          <textarea id="source-content" required minLength={20} rows={6} maxLength={12000} value={draft.content} onChange={(e) => update("content", e.target.value)} placeholder="Dán nội dung cùng đơn vị và kỳ tương ứng. Nội dung này chưa được hệ thống xác minh." />
+        </div>
         <div className="rw-transfer-actions"><Button type="submit" variant="outline" disabled={disabled}><Plus size={14} aria-hidden="true" /> {disabled ? "Đã đủ 8 tài liệu" : "Thêm vào hồ sơ"}</Button><Button type="button" variant="ghost" onClick={() => { setDraft(emptyEvidence); onChange(false); }}>Xóa bản nháp tài liệu</Button></div>
       </form>
     </details>
@@ -160,9 +160,9 @@ function ResearchWorkbench({ stock }: { stock: Stock }) {
     {feedback && <p className="rw-feedback" role="status">{feedback}</p>}{error && <p className="rw-error" role="alert">{error}</p>}
     <div className="rw-layout"><div className="rw-main" ref={contentRef} tabIndex={-1} role="region" aria-label={steps[step]}>
       {step === 0 && <Panel title={`01 · Hồ sơ nghiên cứu ${stock.symbol}`} subtitle="Xác định câu hỏi và những gì AI được phép sử dụng."><div className="rw-panel-body">
-        <label className="rw-field" htmlFor="analyst-question">Câu hỏi cho AI Analyst<textarea id="analyst-question" rows={3} maxLength={4000} value={question} onChange={(e) => { setQuestion(e.target.value); invalidate(); }} /></label>
+        <div className="rw-field"><label htmlFor="analyst-question">Câu hỏi cho AI Analyst</label><textarea id="analyst-question" rows={3} maxLength={4000} value={question} onChange={(e) => { setQuestion(e.target.value); invalidate(); }} /></div>
         <div className="rw-prompt-suggestions">{[`Chất lượng lợi nhuận của ${stock.symbol} cần kiểm tra những gì?`, `Những dữ liệu nào còn thiếu để định giá ${stock.symbol}?`, "Giải thích ROE và giới hạn khi sử dụng chỉ số này."].map((text) => <button key={text} onClick={() => { setQuestion(text); invalidate(); }}>{text}<ArrowRight size={12} aria-hidden="true" /></button>)}</div>
-        <label className="rw-field">Giả định của người phân tích <span className="rw-optional">· Không bắt buộc</span><textarea rows={2} maxLength={2000} value={assumptions} onChange={(e) => { setAssumptions(e.target.value); invalidate(); }} placeholder="Ví dụ: Khung nghiên cứu 3–5 năm. Mọi giả định cần được kiểm tra lại." /></label>
+        <div className="rw-field"><label htmlFor="analyst-assumptions">Giả định của người phân tích <span className="rw-optional">· Không bắt buộc</span></label><textarea id="analyst-assumptions" rows={2} maxLength={2000} value={assumptions} onChange={(e) => { setAssumptions(e.target.value); invalidate(); }} placeholder="Ví dụ: Khung nghiên cứu 3–5 năm. Mọi giả định cần được kiểm tra lại." /></div>
         <div className="rw-section-label"><h3>Tài liệu nguồn</h3><span className="badge">{sources.length} TÀI LIỆU</span></div>
         {sources.length === 0 ? <p className="rw-empty">Chưa có tài liệu. Thêm báo cáo tài chính, thuyết minh hoặc công bố doanh nghiệp để bắt đầu nghiên cứu có dẫn nguồn.</p> : <ul className="rw-evidence-list">{sources.map((source, index) => <li key={index}><FileText size={16} aria-hidden="true" /><div><strong>{source.title}</strong><p>{source.publishedAt || "Chưa rõ ngày công bố"} · {source.period} · Chưa xác minh</p></div><Button variant="ghost" size="icon" aria-label={`Xóa tài liệu ${source.title}`} onClick={() => { setSources(sources.filter((_, i) => i !== index)); invalidate(); }}><Trash2 size={15} aria-hidden="true" /></Button></li>)}</ul>}
         <EvidenceEditor onAdd={addEvidence} onChange={(pending) => { setPendingSource(pending); invalidate(); }} disabled={sources.length >= 8} />
@@ -181,7 +181,7 @@ function ResearchWorkbench({ stock }: { stock: Stock }) {
       </div></Panel>}
       {step === 2 && packet && <Panel title="03 · Kiểm tra báo cáo từ ChatGPT" subtitle="Đối chiếu định dạng, mã hồ sơ và mã nguồn trích dẫn."><div className="rw-panel-body">
         <div className="rw-import-note"><Info size={17} aria-hidden="true" /><p>Dán JSON do ChatGPT trả về cho hồ sơ <strong>{packet.symbol}</strong>. Kiểm tra tự động không thay thế việc xác minh số liệu và nội dung tài liệu.</p></div>
-        <label className="rw-field" htmlFor="research-response">Phản hồi JSON từ ChatGPT<textarea id="research-response" className="rw-json-input" rows={10} maxLength={120000} value={rawReport} onChange={(e) => { setRawReport(e.target.value); setResult(null); }} placeholder={'{\n  "packetId": "...",\n  "symbol": "' + packet.symbol + '",\n  ...\n}'} spellCheck={false} /></label>
+        <div className="rw-field"><label htmlFor="research-response">Phản hồi JSON từ ChatGPT</label><textarea id="research-response" className="rw-json-input" rows={10} maxLength={120000} value={rawReport} onChange={(e) => { setRawReport(e.target.value); setResult(null); }} placeholder={'{\n  "packetId": "...",\n  "symbol": "' + packet.symbol + '",\n  ...\n}'} spellCheck={false} /></div>
         <div className="rw-transfer-actions"><Button disabled={!rawReport.trim()} onClick={() => { setResult(validateImportedReport(rawReport, packet)); setFeedback(""); }}><FileCheck2 size={15} aria-hidden="true" /> Kiểm tra báo cáo</Button><Button variant="outline" onClick={() => downloadText(`${packet.symbol}-EMPTY-response-template.json`, JSON.stringify(getResponseTemplate(packet), null, 2), "application/json")}><Download size={14} aria-hidden="true" /> Tải mẫu JSON trống</Button></div>
         <p className="rw-help rw-transfer-note">BẢN MẪU TRỐNG chỉ hướng dẫn định dạng, không phải báo cáo AI.</p>
         {result && <ReviewResult result={result} packet={packet} />}

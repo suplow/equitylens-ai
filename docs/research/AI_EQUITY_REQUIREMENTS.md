@@ -4,7 +4,7 @@ Ngày rà soát: 09/10/2026. Phạm vi: nghiên cứu cơ bản cổ phiếu Vi�
 
 ## 1. Luồng phù hợp hiện tại
 
-Web local chuẩn hóa hồ sơ, tính số bằng hàm xác định, xuất Research Pack để người dùng chủ động gửi vào ChatGPT; sau đó nhập phản hồi về web. Không cần API trả phí. Dữ liệu gửi vào ChatGPT rời khỏi máy local; giao diện phải nói rõ trước khi xuất. Chỉ đưa tài liệu người dùng có quyền sử dụng và chia sẻ.
+Web local chuẩn hóa hồ sơ, xuất Research Pack để người dùng chủ động gửi vào ChatGPT; sau đó nhập phản hồi về web. Phần tính số bằng hàm xác định là yêu cầu cho Financial Engine tiếp theo, chưa được triển khai trong bản này. Không cần API trả phí. Dữ liệu gửi vào ChatGPT rời khỏi máy local; giao diện phải nói rõ trước khi xuất. Chỉ đưa tài liệu người dùng có quyền sử dụng và chia sẻ.
 
 AI giải thích, so sánh, phản biện và nêu câu hỏi còn thiếu. AI không bổ sung số thiếu bằng trí nhớ, không quyết định độ tin cậy chỉ từ giọng văn và không thực hiện giao dịch.
 

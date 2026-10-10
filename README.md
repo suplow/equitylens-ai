@@ -9,6 +9,7 @@ Dashboard nghiên cứu cổ phiếu Việt Nam, chạy cục bộ với Next.js
 - [Yêu cầu nghiên cứu của agent tài chính](docs/research/AI_EQUITY_REQUIREMENTS.md)
 - [Handoff từ agent cầu nối sang thiết kế](docs/research/PRODUCT_HANDOFF.md)
 - [Cách dùng ChatGPT và giới hạn kết nối](docs/research/CHATGPT_LOCAL_WORKFLOW.md)
+- [Trải nghiệm và luồng giao diện](docs/research/UX_NOTES.md)
 
 ## Chạy trên máy
 
@@ -46,6 +47,7 @@ src/components/                Dashboard và từng chức năng nghiên cứu
 src/components/ui/             Button dùng Radix Slot + CVA
 src/hooks/                     Watchlist cục bộ
 src/lib/data/                  Kiểu dữ liệu, provider contract, mock fixtures
+src/lib/research/              Hồ sơ nguồn, prompt và kiểm tra phản hồi JSON
 src/lib/                       Định dạng số và tiện ích giao diện
 src/lib/data/*.test.ts          Kiểm thử biên dữ liệu
  tests/                        Kiểm thử Playwright
@@ -80,13 +82,15 @@ npm run test:e2e
 
 E2E kiểm tra tìm mã, không tìm thấy, biểu đồ, watchlist sau reload, trạng thái rỗng, giữ mã giữa các trang, chuyển loại báo cáo, chức năng chưa bật, lỗi runtime/console và responsive 320/390/768/1024/1440 px. Playwright tự chạy dev server hoặc dùng server sẵn có ở cổng 3000.
 
+Luồng nghiên cứu có kiểm thử nguồn tự nhập, clipboard Windows, tải TXT/JSON, nhập báo cáo và mở trích dẫn, nguồn lạ/snapshot cũ, đổi mã, opt-in MOCK, bản mẫu trống và HTML chỉ hiển thị như văn bản. Kiểm thử dùng phản hồi giả lập có nhãn kiểm thử; chưa gửi yêu cầu thật tới ChatGPT.
+
 ## Ranh giới dữ liệu
 
 Các chỉ số P/E, P/B, ROE và vốn hóa là giá trị mock độc lập, chưa tính từ bảng tài chính mock. Bảng tài chính rút gọn không phải báo cáo đầy đủ và không được dùng để suy ra sức khỏe doanh nghiệp. Các chỉ số ngân hàng chỉ minh họa bố cục; chưa có schema ngành ngân hàng chuyên biệt.
 
 Provider hiện trả `null` cho mã không có. Adapter dữ liệu thật sau này cần bổ sung thông tin thời điểm công bố, kỳ báo cáo, kiểm toán, đơn vị, giá điều chỉnh và các trường thiếu; không được điền 0 hoặc tự sinh số liệu thay cho dữ liệu thiếu.
 
-Bốn lớp dữ liệu tương lai (`verified`, `calculated`, `assumption`, `interpretation`) đã có trong kiểu provenance. Chỉ `mock` đang được sử dụng. Không có kết quả nào được gắn nhãn verified.
+Bốn lớp dữ liệu (`verified`, `calculated`, `assumption`, `interpretation`) đã có trong kiểu provenance. Provider dashboard chỉ dùng `mock`. Hồ sơ nghiên cứu riêng nhận nguồn `provided_unverified`, giả định người dùng và phản hồi chưa kiểm chứng. Không có kết quả nào được gắn nhãn verified.
 
 ## Các phase tiếp theo
 
@@ -95,7 +99,7 @@ Bốn lớp dữ liệu tương lai (`verified`, `calculated`, `assumption`, `in
 3. Phase 4: kiểm chứng nguồn dữ liệu Việt Nam và giấy phép; adapter thực, lưu trữ và lịch cập nhật khi cần.
 4. Báo cáo hoàn chỉnh và xuất PDF cần triển khai thêm sau khi có dữ liệu và quy trình trích dẫn.
 
-Khi triển khai Phase 3, lưu `OPENAI_API_KEY` trong `.env.local` (đã gitignore); không đưa vào biến `NEXT_PUBLIC_*`, client bundle, chat hoặc Git. File `.env.example` chỉ là hướng dẫn, ứng dụng hiện không đọc khóa và không gọi API.
+Theo lựa chọn hiện tại, không cần cấu hình `OPENAI_API_KEY`. File `.env.example` chỉ để tham khảo cho phương án API sau này; ứng dụng không đọc khóa hoặc gọi API. Chỉ khi người dùng chủ động đổi sang phương án API có tính phí mới cấu hình khóa phía server trong `.env.local` (đã gitignore), tuyệt đối không dùng `NEXT_PUBLIC_*` hay đưa khóa vào Git.
 
 ## Dependency audit
 

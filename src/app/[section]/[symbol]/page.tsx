@@ -50,7 +50,7 @@ export default async function StockPage({
             </p>
             <h1>
               {stock.symbol}
-              <MockBadge />
+              {section === "analyst" ? <span className="badge">HỒ SƠ LOCAL</span> : <MockBadge />}
             </h1>
             <p className="stock-meta">
               {stock.name}

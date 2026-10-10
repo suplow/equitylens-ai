@@ -93,11 +93,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="sidebar-bottom">
           <div className="demo-card">
             <FlaskConical size={19} />
-            <strong>Không gian minh họa</strong>
+            <strong>{section === "analyst" ? "Nghiên cứu cùng ChatGPT" : "Không gian minh họa"}</strong>
             <p>
-              Khám phá công cụ với dữ liệu giả lập. Không kết nối thị trường.
+              {section === "analyst" ? "Chuẩn bị nguồn tại local, chuyển sang ChatGPT và đối chiếu phản hồi." : "Khám phá công cụ với dữ liệu giả lập. Không kết nối thị trường."}
             </p>
-            <span className="badge">PHASE 01 · PREVIEW</span>
+            <span className="badge">{section === "analyst" ? "CHUYỂN HỒ SƠ THỦ CÔNG" : "PHASE 01 · PREVIEW"}</span>
           </div>
           <div className="profile">
             <span className="avatar">EL</span>
@@ -182,7 +182,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <span className="topbar-mode">
             <span />
-            Demo mode
+            {section === "analyst" ? "Local research" : "Demo mode"}
           </span>
         </header>
         <main id="main" tabIndex={-1}>

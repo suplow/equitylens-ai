@@ -35,6 +35,7 @@ test("source packet, manual transfer and imported report preserve evidence witho
     if (/^https?:/.test(request.url()) && !request.url().startsWith("http://127.0.0.1:3000/")) outbound.push(request.url());
   });
   await page.goto("/analyst/FPT");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("FPTHỒ SƠ LOCAL");
   await page.getByText("Thêm tài liệu nguồn", { exact: true }).click();
   await page.getByLabel("Tên tài liệu", { exact: true }).fill("Tài liệu kiểm thử — không phải số liệu thị trường");
   await expect(page.getByRole("button", { name: "Tạo hồ sơ nghiên cứu", exact: true })).toBeDisabled();
@@ -58,7 +59,8 @@ test("source packet, manual transfer and imported report preserve evidence witho
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.getByRole("button", { name: "Sao chép hồ sơ + prompt", exact: true }).click();
   await expect(page.getByText(/Đã sao chép hồ sơ và hướng dẫn/)).toBeVisible();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(prompt);
+  // Windows clipboard uses CRLF even when the source text/download uses LF.
+  expect((await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n")).toBe(prompt);
 
   const report = await template(page);
   report.summary = "Báo cáo kiểm thử định dạng; nội dung chưa được xác minh.";
@@ -76,6 +78,7 @@ test("source packet, manual transfer and imported report preserve evidence witho
   expect(saved.packet).toEqual(packet);
   expect(saved.report).toEqual(report);
   expect(saved.warnings.length).toBeGreaterThan(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: "qa/research-report-desktop.png", fullPage: true });
   expect(outbound).toEqual([]);
   expect(errors).toEqual([]);
@@ -88,7 +91,7 @@ test("unknown citations and outdated packets are rejected, while edits reset rev
   const report = await template(page);
   report.sections[0].claims = [{ text: "Nhận định thiếu tài liệu nguồn.", category: "interpretation", sourceIds: ["D01"] }];
   await importReport(page, report);
-  await expect(page.getByRole("alert")).toContainText("nguồn D01 không tồn tại");
+  await expect(page.locator(".research-workbench").getByRole("alert")).toContainText("nguồn D01 không tồn tại");
   await expect(page.getByRole("button", { name: "Tải hồ sơ & kết quả", exact: true })).toHaveCount(0);
   report.sections[0].claims[0] = { text: "Cần bổ sung tài liệu.", category: "missing_data", sourceIds: [] };
   await page.getByRole("button", { name: /Chuẩn bị hồ sơ/ }).click();
@@ -99,13 +102,14 @@ test("unknown citations and outdated packets are rejected, while edits reset rev
   await page.getByRole("button", { name: "Tôi đã có phản hồi", exact: true }).click();
   await expect(page.getByLabel("Phản hồi JSON từ ChatGPT", { exact: true })).toHaveValue("");
   await importReport(page, report);
-  await expect(page.getByRole("alert")).toContainText("Mã hồ sơ không khớp");
+  await expect(page.locator(".research-workbench").getByRole("alert")).toContainText("Mã hồ sơ không khớp");
   const search = page.getByRole("textbox", { name: "Tìm mã cổ phiếu" });
   await search.fill("VCB");
   await search.press("Enter");
+  await expect(page).toHaveURL(/stocks\/VCB$/);
   await page.getByRole("link", { name: /AI Research Analyst/ }).click();
   await expect(page).toHaveURL(/analyst\/VCB$/);
-  await expect(page.getByLabel("Câu hỏi cho AI Analyst", { exact: true })).toContainText("VCB");
+  await expect(page.getByLabel("Câu hỏi cho AI Analyst", { exact: true })).toHaveValue(/VCB/);
   await expect(page.getByRole("button", { name: /Kiểm tra báo cáo/ })).toBeDisabled();
 });
 
@@ -115,12 +119,19 @@ test("bank checklist, explicit mock opt-in and empty template warning work on mo
   await expect(page.locator(".rw-checklist")).toContainText("NIM");
   await expect(page.locator(".rw-checklist")).toContainText("Không áp dụng máy móc FCFF");
   await page.getByRole("checkbox", { name: /Thêm dữ liệu MOCK để luyện tập/ }).check();
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: "qa/research-prepare-mobile.png", fullPage: true });
   const packet = await prepare(page);
+  const transferRegion = page.getByRole("region", { name: "Chuyển sang ChatGPT", exact: true });
+  await expect(transferRegion).toBeFocused();
+  const regionBounds = await transferRegion.boundingBox();
+  expect(regionBounds!.y).toBeGreaterThanOrEqual(0);
+  expect(regionBounds!.y).toBeLessThan(100);
   expect(packet.mode).toBe("mock_practice");
   expect(packet.industryTemplate).toBe("bank");
   expect(packet.sources).toHaveLength(1);
   expect(packet.sources[0]).toMatchObject({ id: "M01", status: "mock" });
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: "qa/research-transfer-mobile.png", fullPage: true });
   const report = await template(page);
   await importReport(page, report);
@@ -141,7 +152,7 @@ test("source draft can be cleared and invalid source URLs cannot enter a packet"
   await page.getByLabel("Vị trí trích dẫn", { exact: true }).fill("Trang kiểm thử");
   await page.getByLabel("Nội dung trích từ tài liệu", { exact: true }).fill("Đây là nội dung kiểm thử, không phải tài liệu doanh nghiệp.");
   await page.getByRole("button", { name: "Thêm vào hồ sơ", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("Nguồn chỉ nhận URL http/https");
+  await expect(page.locator(".research-workbench").getByRole("alert")).toContainText("Nguồn chỉ nhận URL http/https");
   await expect(page.getByRole("button", { name: "Tạo hồ sơ nghiên cứu", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Xóa bản nháp tài liệu", exact: true }).click();
   await expect(page.getByLabel("Tên tài liệu", { exact: true })).toHaveValue("");
