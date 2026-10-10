@@ -13,7 +13,7 @@ Ngày kiểm chứng: 09/10/2026. Quyết định của người dùng: dùng t�
 
 Web chuẩn bị và kiểm tra hồ sơ trên máy; **ChatGPT xử lý trực tuyến**, không phải mô hình chạy offline. Người dùng tự chọn tài liệu và thời điểm gửi. Bản local không lưu mật khẩu, cookie hay token ChatGPT và không gọi OpenAI API. Chỉ lưu dữ liệu trong bộ nhớ của trang; tải bản sao trước khi rời trang hoặc reload.
 
-Tài liệu thiếu ngày công bố, đơn vị, phạm vi hoặc thuyết minh phải được nêu là thiếu. Financial Engine chưa được triển khai nên prompt không yêu cầu AI tự tính ratio hoặc giá mục tiêu. Khi chưa có nguồn thật, luồng vẫn giúp lập checklist nghiên cứu nhưng chưa cho một kết luận đầu tư đáng tin.
+Tài liệu thiếu ngày công bố, đơn vị, phạm vi hoặc thuyết minh phải được nêu là thiếu. Cập nhật Phase 2 (10/10/2026): Financial Engine đã có ở trang tài chính/định giá nhưng **chưa đính kèm output vào hồ sơ ChatGPT**. Prompt vẫn không yêu cầu AI tự tính ratio hoặc giá mục tiêu. Dữ liệu nguồn của luồng ChatGPT còn ở bộ nhớ; riêng dataset Engine có lưu localStorage chủ động. Khi chưa có nguồn thật, luồng giúp lập checklist nghiên cứu nhưng chưa cho một kết luận đầu tư đáng tin.
 
 ## Đường tự động hóa có thể đánh giá tiếp
 

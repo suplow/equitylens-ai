@@ -34,6 +34,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const section = pathname.split("/")[1] ?? "";
+  const financialEngine = section === "financials" || section === "valuation";
+  const localResearch = section === "analyst" || financialEngine;
   const symbol =
     stocks.find((s) => s.symbol === pathname.split("/")[2]?.toUpperCase())
       ?.symbol ?? "FPT";
@@ -93,11 +95,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="sidebar-bottom">
           <div className="demo-card">
             <FlaskConical size={19} />
-            <strong>{section === "analyst" ? "Nghiên cứu cùng ChatGPT" : "Không gian minh họa"}</strong>
+            <strong>{financialEngine ? "Financial Intelligence Engine" : section === "analyst" ? "Nghiên cứu cùng ChatGPT" : "Không gian minh họa"}</strong>
             <p>
-              {section === "analyst" ? "Chuẩn bị nguồn tại local, chuyển sang ChatGPT và đối chiếu phản hồi." : "Khám phá công cụ với dữ liệu giả lập. Không kết nối thị trường."}
+              {financialEngine ? "Nhập báo cáo có nguồn, kiểm tra công thức và thay đổi giả định tại local." : section === "analyst" ? "Chuẩn bị nguồn tại local, chuyển sang ChatGPT và đối chiếu phản hồi." : "Khám phá công cụ với dữ liệu giả lập. Không kết nối thị trường."}
             </p>
-            <span className="badge">{section === "analyst" ? "CHUYỂN HỒ SƠ THỦ CÔNG" : "PHASE 01 · PREVIEW"}</span>
+            <span className="badge">{financialEngine ? "PHASE 02 · LOCAL" : section === "analyst" ? "CHUYỂN HỒ SƠ THỦ CÔNG" : "PHASE 01 · PREVIEW"}</span>
           </div>
           <div className="profile">
             <span className="avatar">EL</span>
@@ -182,22 +184,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <span className="topbar-mode">
             <span />
-            {section === "analyst" ? "Local research" : "Demo mode"}
+            {localResearch ? "Local research" : "Demo mode"}
           </span>
         </header>
         <main id="main" tabIndex={-1}>
           <div className="mock-banner">
             <FlaskConical size={15} />
             <span>
-              <strong>{section === "analyst" ? "HỒ SƠ NGHIÊN CỨU LOCAL" : "DỮ LIỆU MINH HỌA"}</strong>
+              <strong>{localResearch ? "HỒ SƠ NGHIÊN CỨU LOCAL" : "DỮ LIỆU MINH HỌA"}</strong>
               <span className="banner-detail">
                 {" "}
-                {section === "analyst"
+                {financialEngine ? "· Dữ liệu tự nhập chưa được xác minh. Bộ MOCK và kết quả từ MOCK được đánh dấu riêng." : section === "analyst"
                   ? "· Tài liệu tự nhập chưa được xác minh. Số liệu demo không tự đưa vào hồ sơ."
                   : "· Tất cả giá và số liệu tài chính đều là giả lập, không dùng để ra quyết định đầu tư."}
               </span>
             </span>
-            <span className="banner-date">{section === "analyst" ? "LOCAL WORKSPACE" : "30.09.2026"}</span>
+            <span className="banner-date">{localResearch ? "LOCAL WORKSPACE" : "30.09.2026"}</span>
           </div>
           {children}
           <footer>
@@ -205,7 +207,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               EquityLens AI <span className="footer-dot">/</span> Fundamental
               research workspace
             </span>
-            <span>{section === "analyst" ? "Hồ sơ chưa xác minh · Không phải khuyến nghị đầu tư" : "Dữ liệu minh họa · Không phải khuyến nghị đầu tư"}</span>
+            <span>{localResearch ? "Hồ sơ chưa xác minh · Không phải khuyến nghị đầu tư" : "Dữ liệu minh họa · Không phải khuyến nghị đầu tư"}</span>
           </footer>
         </main>
       </div>

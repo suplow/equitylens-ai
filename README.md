@@ -2,7 +2,9 @@
 
 Dashboard nghiên cứu cổ phiếu Việt Nam, chạy cục bộ với Next.js, TypeScript, Tailwind CSS, shadcn-compatible Button, Recharts và Zod.
 
-**Giá và số liệu có sẵn ở dashboard/tài chính đều là mock.** Chưa có dữ liệu thị trường được đồng bộ hay kết quả định giá. Các fixture gắn nguồn `EquityLens · Bộ dữ liệu minh họa v1` và mốc minh họa 30/09/2026.
+**Phase 2 đã có Financial Engine chạy local:** nhập JSON báo cáo có nguồn, tính 27 tỷ số, DCF–FCFF, P/E/P/B/EV–EBITDA, Bear/Base/Bull và sensitivity. Kết quả tính từ dữ liệu/giả định bạn cung cấp, không phải dự báo giá hoặc xác minh báo cáo.
+
+**Giá và số liệu có sẵn vẫn là MOCK.** Dashboard/Stock Overview và tab **Dữ liệu minh họa Phase 1** giữ fixture v1 (mốc minh họa 30/09/2026). Engine có fixture luyện tập riêng, được đánh dấu MOCK cả trên kết quả. Không đồng bộ dữ liệu thị trường thật.
 
 **AI Analyst hiện có luồng dùng tài khoản ChatGPT sẵn có, chuyển hồ sơ thủ công:** chuẩn bị nguồn tại local → copy/download sang ChatGPT → dán JSON phản hồi về để kiểm tra cấu trúc và ID nguồn. Mặc định loại số mock khỏi hồ sơ; nguồn tự nhập luôn chưa xác minh. Web chạy local nhưng ChatGPT xử lý trực tuyến. Không cần API key và không tự gửi dữ liệu.
 
@@ -10,6 +12,10 @@ Dashboard nghiên cứu cổ phiếu Việt Nam, chạy cục bộ với Next.js
 - [Handoff từ agent cầu nối sang thiết kế](docs/research/PRODUCT_HANDOFF.md)
 - [Cách dùng ChatGPT và giới hạn kết nối](docs/research/CHATGPT_LOCAL_WORKFLOW.md)
 - [Trải nghiệm và luồng giao diện](docs/research/UX_NOTES.md)
+- [Cách nhập dữ liệu, đơn vị, kỳ và lưu local](docs/FINANCIAL_DATA.md)
+- [Định nghĩa 27 tỷ số](docs/FINANCIAL_FORMULAS.md)
+- [Phương pháp định giá và giới hạn](docs/VALUATION_METHODS.md)
+- [Báo cáo thực hiện Phase 2](docs/PHASE2_REPORT.md)
 
 ## Chạy trên máy
 
@@ -31,8 +37,9 @@ Không cần API key, database hoặc dịch vụ trả phí. Chưa deploy produ
 - Tìm kiếm sáu mã HOSE minh họa: FPT, VNM, HPG, VCB, MBB, REE. Không tìm thấy có thông báo rõ ràng.
 - Stock Overview: hồ sơ, chỉ số mock, biểu đồ chọn 1/2/3 tháng (30/60/90 ngày lịch giả lập).
 - Watchlist thêm/bỏ mã, lưu bằng localStorage trên trình duyệt. Không đồng bộ tài khoản.
-- Financial Analysis: ba bảng báo cáo rút gọn, bốn năm mock, biểu đồ so sánh và chỉ số minh họa.
-- Valuation: khung phương pháp và kịch bản, kết quả để trống, chưa cho nhập giả định.
+- Financial Analysis: nhập tệp/dán JSON, ba báo cáo chuẩn hóa, 27 tỷ số có công thức và nguồn, bình quân đầu/cuối kỳ, so sánh năm cùng scope/basis, xem dòng quý suy từ YTD và cảnh báo thiếu/mâu thuẫn. Có tab giữ nguyên bốn năm demo Phase 1.
+- Valuation: giả định sửa trực tiếp, ba kịch bản DCF–FCFF, dự phóng từng năm, equity bridge, giá trị/cp, chênh lệch giá/MOS và ma trận 5×5; P/E/P/B/EV–EBITDA, peer JSON có nguồn và ghi chú khác biệt. Ngân hàng/chứng khoán/bảo hiểm khóa kết quả vì chưa có mô hình chuyên ngành.
+- Bộ dữ liệu lưu/tải chủ động qua localStorage theo mã; xuất JSON sao lưu. Giả định lưu riêng theo mã/kỳ. Dữ liệu tự nhập luôn chưa xác minh, không cần API key.
 - AI Analyst: nhập nguồn có kỳ/ngày/trang, tạo snapshot, xuất prompt cho ChatGPT, nhập JSON và kiểm tra mã/snapshot/source IDs. Không xác minh sự thật; phản hồi luôn cần đối chiếu tài liệu.
 - Research Reports: đủ bảy phần của bản mẫu; xuất PDF chưa được triển khai.
 - Sidebar desktop, menu mobile, focus states, điều hướng bàn phím, bảng cuộn ngang trong vùng chứa.
@@ -45,8 +52,9 @@ src/app/                       Routes, layout, global design tokens
 src/app/[section]/[symbol]/    Trang theo mã, kiểm tra tham số bằng Zod
 src/components/                Dashboard và từng chức năng nghiên cứu
 src/components/ui/             Button dùng Radix Slot + CVA
-src/hooks/                     Watchlist cục bộ
+src/hooks/                     Watchlist và bộ dữ liệu tài chính cục bộ
 src/lib/data/                  Kiểu dữ liệu, provider contract, mock fixtures
+src/lib/financial/             Schema v2, normalization, ratios, valuation, peers và unit tests
 src/lib/research/              Hồ sơ nguồn, prompt và kiểm tra phản hồi JSON
 src/lib/                       Định dạng số và tiện ích giao diện
 src/lib/data/*.test.ts          Kiểm thử biên dữ liệu
@@ -80,21 +88,23 @@ $env:PLAYWRIGHT_CHANNEL = "chrome"
 npm run test:e2e
 ```
 
-E2E kiểm tra tìm mã, không tìm thấy, biểu đồ, watchlist sau reload, trạng thái rỗng, giữ mã giữa các trang, chuyển loại báo cáo, chức năng chưa bật, lỗi runtime/console và responsive 320/390/768/1024/1440 px. Playwright tự chạy dev server hoặc dùng server sẵn có ở cổng 3000.
+E2E kiểm tra tìm mã, không tìm thấy, biểu đồ, watchlist sau reload, trạng thái rỗng, giữ mã giữa các trang, tab demo cũ, lỗi runtime/console và responsive 320/390/768/1024/1440 px. Phase 2 thêm nhập/kiểm tra/xuất JSON, lưu và tải lại, tỷ số khớp số tính tay, DCF với bài tính độc lập, sensitivity, đổi/lưu giả định, peer median, dữ liệu thiếu/âm và khóa ngân hàng. Playwright tự chạy dev server hoặc dùng server sẵn có ở cổng 3000.
 
 Luồng nghiên cứu có kiểm thử nguồn tự nhập, clipboard Windows, tải TXT/JSON, nhập báo cáo và mở trích dẫn, nguồn lạ/snapshot cũ, đổi mã, opt-in MOCK, bản mẫu trống và HTML chỉ hiển thị như văn bản. Kiểm thử dùng phản hồi giả lập có nhãn kiểm thử; chưa gửi yêu cầu thật tới ChatGPT.
 
 ## Ranh giới dữ liệu
 
-Các chỉ số P/E, P/B, ROE và vốn hóa là giá trị mock độc lập, chưa tính từ bảng tài chính mock. Bảng tài chính rút gọn không phải báo cáo đầy đủ và không được dùng để suy ra sức khỏe doanh nghiệp. Các chỉ số ngân hàng chỉ minh họa bố cục; chưa có schema ngành ngân hàng chuyên biệt.
+Chỉ số P/E, P/B, ROE và vốn hóa **trên dashboard/Stock Overview/tab demo Phase 1** là mock độc lập, chưa tính từ bảng mock cũ. Financial Engine tách dataset v2, không lấy số cũ để tính. Ngân hàng/chứng khoán/bảo hiểm có schema khung riêng, chưa đầy đủ cho tính tỷ số/định giá; các kết quả đó bị khóa.
 
 Provider hiện trả `null` cho mã không có. Adapter dữ liệu thật sau này cần bổ sung thông tin thời điểm công bố, kỳ báo cáo, kiểm toán, đơn vị, giá điều chỉnh và các trường thiếu; không được điền 0 hoặc tự sinh số liệu thay cho dữ liệu thiếu.
 
-Bốn lớp dữ liệu (`verified`, `calculated`, `assumption`, `interpretation`) đã có trong kiểu provenance. Provider dashboard chỉ dùng `mock`. Hồ sơ nghiên cứu riêng nhận nguồn `provided_unverified`, giả định người dùng và phản hồi chưa kiểm chứng. Không có kết quả nào được gắn nhãn verified.
+Bốn lớp dữ liệu (`verified`, `calculated`, `assumption`, `interpretation`) đã có trong kiểu provenance. Provider dashboard chỉ dùng `mock`. Engine nhận `user_supplied` hoặc `mock`, kết quả có input source IDs và cờ MOCK lan truyền. Hồ sơ ChatGPT riêng nhận nguồn `provided_unverified`, giả định người dùng và phản hồi chưa kiểm chứng; chưa tự đính kèm kết quả Engine. Không có dữ liệu nào được gắn nhãn verified.
+
+Thử nhanh: vào `/financials/FPT` → **Nạp dữ liệu MOCK** → xem công thức → **Lưu dữ liệu local** → sang `/valuation/FPT` → **Tải bản đã lưu** → **Nạp giả định MOCK** → thay WACC hoặc CAPEX. Với báo cáo thực, tải mẫu JSON trống và nhập số từ nguồn đã đối chiếu; giữ trường thiếu là null.
 
 ## Các phase tiếp theo
 
-1. Phase 2: schema đầy đủ và riêng cho ngành cần thiết; công thức ratio, DCF/phương pháp phù hợp, kịch bản và sensitivity; unit tests cho công thức và trường hợp thiếu dữ liệu.
+1. Mở rộng Engine: TTM, schema/mô hình định chế tài chính hoàn chỉnh, valuation tại ngày cụ thể, terminal reinvestment/ROIC, corporate actions/FX, thêm mã và bundle nghiên cứu gồm peer/assumption lineage.
 2. AI tự động: có thể đánh giá Codex SDK/app-server đăng nhập ChatGPT sau khi cấu hình và kiểm thử; chưa triển khai. Theo lựa chọn hiện tại không dùng API trả phí. Luồng thủ công đã có kiểm tra schema/source IDs, nhưng kiểm chứng số liệu và nội dung citation chưa được triển khai.
 3. Phase 4: kiểm chứng nguồn dữ liệu Việt Nam và giấy phép; adapter thực, lưu trữ và lịch cập nhật khi cần.
 4. Báo cáo hoàn chỉnh và xuất PDF cần triển khai thêm sau khi có dữ liệu và quy trình trích dẫn.

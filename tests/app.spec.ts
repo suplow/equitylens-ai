@@ -73,6 +73,7 @@ test("all destinations retain symbol and incomplete features are honest", async 
     .getByRole("link", { name: "Báo cáo tài chính", exact: true })
     .click();
   await expect(page).toHaveURL(/financials\/HPG$/);
+  await page.getByRole("button", { name: "Dữ liệu minh họa Phase 1", exact: true }).click();
   await page
     .getByRole("button", { name: "Bảng cân đối kế toán", exact: true })
     .click();
@@ -93,6 +94,7 @@ test("all destinations retain symbol and incomplete features are honest", async 
     .locator(".sidebar")
     .getByRole("link", { name: "Định giá", exact: true })
     .click();
+  await page.getByRole("button", { name: "Dữ liệu minh họa Phase 1", exact: true }).click();
   await expect(
     page.getByText("Không có kết quả định giá trong Phase 1."),
   ).toBeVisible();

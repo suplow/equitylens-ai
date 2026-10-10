@@ -1,7 +1,12 @@
+"use client";
 import { Calculator, Scale, BarChart3, Info } from "lucide-react";
 import type { Stock } from "@/lib/data/types";
 import { Panel } from "./shared";
+import { FinancialWorkspace } from "./financial-workspace";
 export function Valuation({ stock }: { stock: Stock }) {
+  return <FinancialWorkspace key={stock.symbol} stock={stock} view="valuation" demo={<DemoValuation stock={stock} />} />;
+}
+function DemoValuation({ stock }: { stock: Stock }) {
   return (
     <>
       <div className="notice">

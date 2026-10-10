@@ -14,6 +14,7 @@ import { Info } from "lucide-react";
 import type { FinancialPeriod, Stock } from "@/lib/data/types";
 import { number } from "@/lib/format";
 import { MockBadge, Panel, SourceNote } from "./shared";
+import { FinancialWorkspace } from "./financial-workspace";
 const statements: {
   label: string;
   rows: { key: keyof FinancialPeriod; label: string }[];
@@ -43,6 +44,9 @@ const statements: {
   },
 ];
 export function FinancialAnalysis({ stock }: { stock: Stock }) {
+  return <FinancialWorkspace key={stock.symbol} stock={stock} view="financials" demo={<DemoFinancialAnalysis stock={stock} />} />;
+}
+function DemoFinancialAnalysis({ stock }: { stock: Stock }) {
   const [tab, setTab] = useState(0);
   return (
     <>
