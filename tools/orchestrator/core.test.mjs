@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync, statSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { Manager, gitSnapshot } from './core.mjs';
+import { Manager, gitSnapshot, inspectPreflight } from './core.mjs';
 
 function fixture(t, options = {}) {
   const root = mkdtempSync(join(tmpdir(), 'equity-orchestrator-'));
@@ -21,6 +21,52 @@ test('approval is mandatory; approval does not start a phase', t => {
   assert.throws(() => m.start('SIM'), /approval/i);
   m.approve('SIM'); assert.equal(m.view().phases[0].state, 'APPROVED');
   assert.equal(m.view().tasks[0].attempts, 0);
+});
+
+test('read-only diagnostics reject changed plans without changing approvals', t => {
+  const { manager: m, root, plan } = fixture(t); m.approve('SIM');
+  const before = JSON.stringify(m.state); const changed = structuredClone(plan);
+  changed.phases[0].tasks[0].objective = 'Changed scope';
+  assert.ok(inspectPreflight(root, m.state, changed, 'SIM-1').issues.includes('PLAN_CHANGED'));
+  assert.equal(JSON.stringify(m.state), before);
+});
+
+test('checkpoint-only commits do not invalidate approval or fail scoped QA', async t => {
+  const { manager: m, root, git } = fixture(t, { worker: async () => ({ outcome: 'completed' }) });
+  m.approve('SIM'); const approvals = structuredClone(m.state.approvals);
+  m.export(); git('add', 'project'); git('commit', '-m', 'runtime exports only');
+  m.start('SIM'); await m.tick();
+  assert.equal(m.task('SIM-1').state, 'READY_FOR_REVIEW');
+  assert.deepEqual(m.state.approvals, approvals);
+  assert.equal(gitSnapshot(root).files.length, 0);
+});
+
+test('a source commit followed by a revert still invalidates the approved baseline', async t => {
+  const { manager: m, root, git } = fixture(t, { worker: async () => ({ outcome: 'completed' }) });
+  m.approve('SIM');
+  writeFileSync(join(root, 'file.txt'), 'changed'); git('add', '.'); git('commit', '-m', 'source change');
+  writeFileSync(join(root, 'file.txt'), 'baseline'); git('add', '.'); git('commit', '-m', 'restore contents');
+  m.start('SIM'); await m.tick();
+  assert.equal(m.phase('SIM').state, 'BLOCKED'); assert.equal(m.task('SIM-1').attempts, 0);
+  assert.match(m.phase('SIM').error, /COMMIT_CHANGED/);
+});
+
+test('unchanged exports do not rewrite checkpoint or change source fingerprint', t => {
+  const { manager: m, root } = fixture(t); m.export();
+  const path = join(root, 'project', 'CHECKPOINT.md');
+  utimesSync(path, new Date(1000000000000), new Date(1000000000000));
+  const before = statSync(path).mtimeMs; const snapshot = gitSnapshot(root);
+  m.export(); assert.equal(statSync(path).mtimeMs, before);
+  assert.equal(gitSnapshot(root).fingerprint, snapshot.fingerprint);
+});
+
+test('project documentation is not excluded with generated runtime exports', async t => {
+  const { manager: m, root, git } = fixture(t, { worker: async () => ({ outcome: 'completed' }) });
+  m.approve('SIM'); m.export();
+  writeFileSync(join(root, 'project', 'DECISIONS.md'), 'external decision');
+  git('add', 'project'); git('commit', '-m', 'not a runtime-only commit');
+  m.start('SIM'); await m.tick();
+  assert.equal(m.task('SIM-1').attempts, 0); assert.match(m.phase('SIM').error, /COMMIT_CHANGED/);
 });
 test('one manager per worktree; elapsed time never steals a live lock', t => {
   const { manager: m, root, plan } = fixture(t);

@@ -52,7 +52,7 @@ async function refresh() {
       if (t.state === 'READY_FOR_REVIEW') button(card, 'Record independent review', 'review', t.id);
       el('tasks').append(card);
     }
-    el('checkpoint').textContent = JSON.stringify({ revision: state.revision, branch: state.git.branch, latestCommit: state.git.commit, changedFiles: state.git.files.map(f => f.path), planHash: state.planHash }, null, 2);
+    el('checkpoint').textContent = JSON.stringify({ revision: state.revision, branch: state.git.branch, latestCommit: state.git.commit, changedFiles: state.git.files.map(f => f.path), planHash: state.planHash, preflight: state.preflight }, null, 2);
     el('events').textContent = state.events.slice(-20).map(e => `${new Date(e.at).toISOString()} · ${e.code} · ${e.task || ''}`).join('\n') || 'Chưa có sự kiện. Chưa phê duyệt Phase 3–5.';
   } catch (error) { el('message').textContent = error.message; }
 }

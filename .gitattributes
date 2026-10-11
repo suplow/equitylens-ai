@@ -1,0 +1,5 @@
+# Generated runtime projections use deterministic LF on every platform.
+/project/STATE.json text eol=lf
+/project/TASKS.json text eol=lf
+/project/APPROVALS.json text eol=lf
+/project/CHECKPOINT.md text eol=lf

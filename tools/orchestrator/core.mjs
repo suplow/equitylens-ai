@@ -33,7 +33,50 @@ export function gitSnapshot(root) {
   }
   return { branch, commit, files, fingerprint: hash({ branch, commit, files }) };
 }
-function atomic(path, value) { const temp = `${path}.${randomUUID()}.tmp`; writeFileSync(temp, value); renameSync(temp, path); }
+function atomic(path, value) {
+  if (existsSync(path) && readFileSync(path, 'utf8') === value) return;
+  const temp = `${path}.${randomUUID()}.tmp`; writeFileSync(temp, value); renameSync(temp, path);
+}
+
+export function compatibleCommit(root, expected, actual) {
+  if (!expected || !actual) return false;
+  if (expected === actual) return true;
+  try {
+    git(root, 'merge-base', '--is-ancestor', expected, actual);
+    const commits = git(root, 'rev-list', '--max-count=1001', `${expected}..${actual}`).split('\n').filter(Boolean);
+    if (commits.length > 1000) return false;
+    return commits.every(commit => {
+      const paths = execFileSync('git', ['diff-tree', '--root', '--no-commit-id', '--name-only', '--no-renames', '-r', '-m', '-z', commit], { cwd: root, encoding: 'utf8', stdio: 'pipe', windowsHide: true, timeout: 15000, maxBuffer: 2 ** 20 }).split('\0').filter(Boolean);
+      return paths.every(path => exportFiles.has(path));
+    });
+  } catch { return false; }
+}
+
+// Read-only diagnostic shared by dispatch, dashboard and the CLI. No approval mutation.
+export function inspectPreflight(root, state, plan, id) {
+  const task = state.tasks.find(t => t.id === id);
+  const spec = plan.phases.flatMap(p => p.tasks).find(t => t.id === id);
+  if (!task || !spec) throw Error('Unknown task');
+  const before = gitSnapshot(root);
+  const prior = state.tasks.filter(t => t.phaseId === task.phaseId && t.state === 'ACCEPTED').at(-1);
+  const expectedCommit = task.checkpoint?.after?.commit || task.checkpoint?.before?.commit || prior?.checkpoint?.after?.commit || task.commit;
+  const issues = [];
+  if (hash(plan) !== state.planHash) issues.push('PLAN_CHANGED');
+  if (hash(identity(root)) !== hash(state.identity)) issues.push('IDENTITY_CHANGED');
+  if (!task.branch || !expectedCommit) issues.push('APPROVAL_BASELINE_MISSING');
+  else {
+    if (!before.branch || before.branch !== task.branch) issues.push(`BRANCH_CHANGED: expected ${task.branch}, actual ${before.branch || 'detached'}`);
+    if (!compatibleCommit(root, expectedCommit, before.commit)) issues.push(`COMMIT_CHANGED: expected ${expectedCommit}, actual ${before.commit}`);
+  }
+  if (before.files.length) issues.push(`DIRTY_FILES: ${before.files.map(f => f.path).join(', ')}`);
+  for (const path of spec.inputs) {
+    const full = resolve(root, path);
+    if (!existsSync(full)) issues.push(`INPUT_MISSING: ${path}`);
+    else if (!realpathSync(full).startsWith(`${root}${process.platform === 'win32' ? '\\' : '/'}`)) issues.push(`INPUT_OUTSIDE_WORKTREE: ${path}`);
+  }
+  return { taskId: id, ok: issues.length === 0, issues, expectedCommit, expectedBranch: task.branch, git: before,
+    runtimeOnlyCommits: !!expectedCommit && before.commit !== expectedCommit && compatibleCommit(root, expectedCommit, before.commit) };
+}
 
 export class Manager {
   constructor(root, plan, { clock = Date.now, worker = null, qa = null } = {}) {
@@ -82,7 +125,7 @@ export class Manager {
   phase(id) { const p = this.state.phases.find(p => p.id === id); if (!p) throw Error('Unknown phase'); return p; }
   task(id) { const t = this.state.tasks.find(t => t.id === id); if (!t) throw Error('Unknown task'); return t; }
   spec(id) { return this.plan.phases.flatMap(p => p.tasks).find(t => t.id === id); }
-  view() { return { ...structuredClone(this.state), plan: this.plan, git: gitSnapshot(this.root), busy: this.busy, adapter: this.worker ? 'configured' : 'manual' }; }
+  view() { const next = this.state.tasks.find(t => t.state !== 'ACCEPTED'); return { ...structuredClone(this.state), plan: this.plan, git: gitSnapshot(this.root), preflight: next ? inspectPreflight(this.root, this.state, this.plan, next.id) : null, busy: this.busy, adapter: this.worker ? 'configured' : 'manual' }; }
   approve(id) {
     this.mutate(() => {
       const p = this.phase(id); if (p.state !== 'PLANNED') throw Error('Only a planned phase can be approved');
@@ -125,16 +168,10 @@ export class Manager {
     if (!task) return;
     this.busy = true;
     try {
-      const before = gitSnapshot(this.root); const spec = this.spec(task.id);
-      const checkpoint = task.checkpoint?.after || task.checkpoint?.before;
-      const prior = this.state.tasks.filter(t => t.phaseId === phase.id && t.state === 'ACCEPTED').at(-1);
-      const expectedCommit = checkpoint?.commit || prior?.checkpoint?.after?.commit || task.commit;
-      const invalidInput = spec.inputs.some(path => {
-        const full = resolve(this.root, path);
-        return !existsSync(full) || !realpathSync(full).startsWith(`${this.root}${process.platform === 'win32' ? '\\' : '/'}`);
-      });
-      if (hash(identity(this.root)) !== hash(this.identity) || !before.branch || before.branch !== task.branch || before.commit !== expectedCommit || before.files.length || invalidInput) {
-        this.mutate(() => { phase.state = 'BLOCKED'; phase.error = 'Repository identity, clean Git state, branch or required inputs failed preflight'; this.event('PREFLIGHT_BLOCKED', task.id); }); return;
+      const check = inspectPreflight(this.root, this.state, this.plan, task.id);
+      const before = check.git; const spec = this.spec(task.id);
+      if (!check.ok) {
+        this.mutate(() => { phase.state = 'BLOCKED'; phase.error = `Preflight blocked: ${check.issues.join('; ')}`; this.event('PREFLIGHT_BLOCKED', task.id); }); return;
       }
       this.mutate(() => {
         task.state = this.worker ? 'RUNNING' : 'BLOCKED'; task.attempts++; task.workerRunId = randomUUID(); task.branch = before.branch; task.commit = before.commit;
@@ -169,7 +206,7 @@ export class Manager {
     // Disable rename folding: the deleted source and added destination both need scope approval.
     // NUL delimiters preserve whitespace/newlines and avoid Git's quoted filename display.
     const committedPaths = execFileSync('git', ['diff', '--name-only', '--no-renames', '-z', task.checkpoint.before.commit, 'HEAD'], { cwd: this.root, encoding: 'utf8', stdio: 'pipe', windowsHide: true, timeout: 15000, maxBuffer: 2 ** 20 }).split('\0').filter(Boolean);
-    const files = [...before.files.map(f => f.path), ...committedPaths];
+    const files = [...before.files.map(f => f.path), ...committedPaths.filter(path => !exportFiles.has(path))];
     const scope = this.spec(id).files;
     const scopeValid = files.every(path => scope.some(allowed => path === allowed || path.startsWith(`${allowed}/`))) && before.branch === task.branch;
     try { if (scopeValid && !before.files.length && this.qa) tests = await this.qa(this.spec(id).tests, this.root); } catch { tests = [{ name: 'qa-runner', code: null }]; }
