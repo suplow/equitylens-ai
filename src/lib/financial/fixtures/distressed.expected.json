@@ -1,0 +1,689 @@
+{
+  "label": "SYNTHETIC MOCK; independent Python Decimal",
+  "reportId": "FY2025",
+  "ratios": {
+    "grossMargin": {
+      "value": "0.19047619047619047619047619047619047619047619047619"
+    },
+    "operatingMargin": {
+      "value": "-0.071428571428571428571428571428571428571428571428571"
+    },
+    "netProfitMargin": {
+      "value": "-0.19047619047619047619047619047619047619047619047619"
+    },
+    "roe": {
+      "value": null,
+      "code": "not_meaningful"
+    },
+    "roa": {
+      "value": "-0.10322580645161290322580645161290322580645161290323"
+    },
+    "roic": {
+      "value": null,
+      "code": "not_meaningful"
+    },
+    "currentRatio": {
+      "value": "0.525"
+    },
+    "quickRatio": {
+      "value": null,
+      "code": "missing_data"
+    },
+    "cashRatio": {
+      "value": "0.025"
+    },
+    "debtToEquity": {
+      "value": null,
+      "code": "not_meaningful"
+    },
+    "netDebt": {
+      "value": "670000000"
+    },
+    "interestCoverage": {
+      "value": "-0.6"
+    },
+    "assetTurnover": {
+      "value": "0.54193548387096774193548387096774193548387096774194"
+    },
+    "inventoryTurnover": {
+      "value": "2.8333333333333333333333333333333333333333333333333"
+    },
+    "receivableDays": {
+      "value": null,
+      "code": "missing_data"
+    },
+    "cfoNetIncome": {
+      "value": null,
+      "code": "not_meaningful"
+    },
+    "freeCashFlow": {
+      "value": "-65000000"
+    },
+    "fcfMargin": {
+      "value": "-0.15476190476190476190476190476190476190476190476190"
+    },
+    "cashConversion": {
+      "value": null,
+      "code": "not_meaningful"
+    },
+    "revenueGrowth": {
+      "value": "-0.16"
+    },
+    "earningsGrowth": {
+      "value": "-18"
+    },
+    "epsGrowth": {
+      "value": "-18"
+    },
+    "revenueCagr": {
+      "value": "-0.16"
+    },
+    "pe": {
+      "value": null,
+      "code": "not_meaningful"
+    },
+    "pb": {
+      "value": null,
+      "code": "not_meaningful"
+    },
+    "evEbitda": {
+      "value": null,
+      "code": "missing_data"
+    },
+    "fcfYield": {
+      "value": "-0.43333333333333333333333333333333333333333333333333"
+    }
+  },
+  "pureInputs": {
+    "grossMargin": [
+      "80000000",
+      "420000000"
+    ],
+    "operatingMargin": [
+      "-30000000",
+      "420000000"
+    ],
+    "netProfitMargin": [
+      "-80000000",
+      "420000000"
+    ],
+    "roe": [
+      "-85000000",
+      "40000000",
+      "-100000000"
+    ],
+    "roa": [
+      "-80000000",
+      "800000000",
+      "750000000"
+    ],
+    "roic": [
+      "-30000000",
+      null,
+      "610000000",
+      "620000000"
+    ],
+    "currentRatio": [
+      "210000000",
+      "400000000"
+    ],
+    "quickRatio": [
+      "10000000",
+      null,
+      "400000000"
+    ],
+    "cashRatio": [
+      "10000000",
+      "400000000"
+    ],
+    "debtToEquity": [
+      "300000000",
+      "380000000",
+      "-50000000"
+    ],
+    "netDebt": [
+      "300000000",
+      "380000000",
+      "10000000"
+    ],
+    "interestCoverage": [
+      "-30000000",
+      "50000000"
+    ],
+    "assetTurnover": [
+      "420000000",
+      "800000000",
+      "750000000"
+    ],
+    "inventoryTurnover": [
+      "340000000",
+      "100000000",
+      "140000000"
+    ],
+    "receivableDays": [
+      "100000000",
+      null,
+      "420000000",
+      "365"
+    ],
+    "cfoNetIncome": [
+      "-20000000",
+      "-80000000"
+    ],
+    "freeCashFlow": [
+      "-20000000",
+      "45000000"
+    ],
+    "fcfMargin": [
+      "-20000000",
+      "45000000",
+      "420000000"
+    ],
+    "cashConversion": [
+      "-20000000",
+      "-30000000",
+      "25000000"
+    ],
+    "revenueGrowth": [
+      "420000000",
+      "500000000"
+    ],
+    "earningsGrowth": [
+      "-85000000",
+      "5000000"
+    ],
+    "epsGrowth": [
+      "-850",
+      "50"
+    ],
+    "revenueCagr": [
+      "500000000",
+      "420000000",
+      "1"
+    ],
+    "pe": [
+      "1500",
+      "-850"
+    ],
+    "pb": [
+      "1500",
+      "-100000000",
+      "100000"
+    ],
+    "evEbitda": [
+      null,
+      "-30000000",
+      "25000000"
+    ],
+    "fcfYield": [
+      "-20000000",
+      "45000000",
+      "150000000"
+    ]
+  },
+  "historicalFcff": {
+    "value": null,
+    "code": "not_meaningful"
+  },
+  "scenarios": {
+    "Bear": {
+      "value": null,
+      "code": "missing_data",
+      "projections": [
+        {
+          "year": 2026,
+          "revenue": "424200000.00",
+          "ebit": "42420000.0000",
+          "nopat": "33936000.00000",
+          "depreciation": "16968000.0000",
+          "capex": "25452000.0000",
+          "workingCapital": "67872000.0000",
+          "changeWorkingCapital": "-22128000.0000",
+          "fcff": "47580000.00000",
+          "discountFactor": "0.84745762711864406779661016949152542372881355932203",
+          "presentValue": "40322033.898305084745762711864406779661016949152542"
+        },
+        {
+          "year": 2027,
+          "revenue": "428442000.0000",
+          "ebit": "42844200.000000",
+          "nopat": "34275360.0000000",
+          "depreciation": "17137680.000000",
+          "capex": "25706520.000000",
+          "workingCapital": "68550720.000000",
+          "changeWorkingCapital": "678720.000000",
+          "fcff": "25027800.0000000",
+          "discountFactor": "0.71818442976156276931916116058603849468543521976444",
+          "presentValue": "17974576.271186440677966101694915254237288135593220"
+        },
+        {
+          "year": 2028,
+          "revenue": "432726420.000000",
+          "ebit": "43272642.00000000",
+          "nopat": "34618113.600000000",
+          "depreciation": "17309056.80000000",
+          "capex": "25963585.20000000",
+          "workingCapital": "69236227.20000000",
+          "changeWorkingCapital": "685507.20000000",
+          "fcff": "25278078.000000000",
+          "discountFactor": "0.60863087267929048247386539032715126668257222013935",
+          "presentValue": "15385018.672795173800632002298190175237000861821316"
+        },
+        {
+          "year": 2029,
+          "revenue": "437053684.20000000",
+          "ebit": "43705368.4200000000",
+          "nopat": "34964294.73600000000",
+          "depreciation": "17482147.3680000000",
+          "capex": "26223221.0520000000",
+          "workingCapital": "69928589.4720000000",
+          "changeWorkingCapital": "692362.2720000000",
+          "fcff": "25530858.78000000000",
+          "discountFactor": "0.51578887515194108684225880536199259888353577977911",
+          "presentValue": "13168532.931799258931049425695908539821500737660618"
+        },
+        {
+          "year": 2030,
+          "revenue": "441424221.0420000000",
+          "ebit": "44142422.104200000000",
+          "nopat": "35313937.6833600000000",
+          "depreciation": "17656968.841680000000",
+          "capex": "26485453.262520000000",
+          "workingCapital": "70627875.366720000000",
+          "changeWorkingCapital": "699285.894720000000",
+          "fcff": "25786167.3678000000000",
+          "discountFactor": "0.43710921623045854817140576725592593125723371167721",
+          "presentValue": "11271371.407726484339288067756667478999759105963749"
+        }
+      ]
+    },
+    "Base": {
+      "value": null,
+      "code": "missing_data",
+      "projections": [
+        {
+          "year": 2026,
+          "revenue": "432600000.00",
+          "ebit": "64890000.0000",
+          "nopat": "51912000.00000",
+          "depreciation": "17304000.0000",
+          "capex": "25956000.0000",
+          "workingCapital": "69216000.0000",
+          "changeWorkingCapital": "-20784000.0000",
+          "fcff": "64044000.00000",
+          "discountFactor": "0.86206896551724137931034482758620689655172413793103",
+          "presentValue": "55210344.827586206896551724137931034482758620689655"
+        },
+        {
+          "year": 2027,
+          "revenue": "445578000.0000",
+          "ebit": "66836700.000000",
+          "nopat": "53469360.0000000",
+          "depreciation": "17823120.000000",
+          "capex": "26734680.000000",
+          "workingCapital": "71292480.000000",
+          "changeWorkingCapital": "2076480.000000",
+          "fcff": "42481320.0000000",
+          "discountFactor": "0.74316290130796670630202140309155766944114149821641",
+          "presentValue": "31570541.022592152199762187871581450653983353151011"
+        },
+        {
+          "year": 2028,
+          "revenue": "458945340.000000",
+          "ebit": "68841801.00000000",
+          "nopat": "55073440.800000000",
+          "depreciation": "18357813.60000000",
+          "capex": "27536720.40000000",
+          "workingCapital": "73431254.40000000",
+          "changeWorkingCapital": "2138774.40000000",
+          "fcff": "43755759.600000000",
+          "discountFactor": "0.64065767354135060888105293369961868055270818811759",
+          "presentValue": "28032463.149370617901512977161835253597933494608225"
+        },
+        {
+          "year": 2029,
+          "revenue": "472713700.20000000",
+          "ebit": "70907055.0300000000",
+          "nopat": "56725644.02400000000",
+          "depreciation": "18908548.0080000000",
+          "capex": "28362822.0120000000",
+          "workingCapital": "75634192.0320000000",
+          "changeWorkingCapital": "2202937.6320000000",
+          "fcff": "45068432.38800000000",
+          "discountFactor": "0.55229109788047466282849390836174024185578292079103",
+          "presentValue": "24890894.003320462447033074548870957936096120212476"
+        },
+        {
+          "year": 2030,
+          "revenue": "486895111.2060000000",
+          "ebit": "73034266.680900000000",
+          "nopat": "58427413.3447200000000",
+          "depreciation": "19475804.448240000000",
+          "capex": "29213706.672360000000",
+          "workingCapital": "77903217.792960000000",
+          "changeWorkingCapital": "2269025.760960000000",
+          "fcff": "46420485.3596400000000",
+          "discountFactor": "0.47611301541420229554180509341529331194464044895778",
+          "presentValue": "22101397.261569031310727643780463005753602589499008"
+        }
+      ]
+    },
+    "Bull": {
+      "value": null,
+      "code": "missing_data",
+      "projections": [
+        {
+          "year": 2026,
+          "revenue": "441000000.00",
+          "ebit": "88200000.0000",
+          "nopat": "70560000.00000",
+          "depreciation": "17640000.0000",
+          "capex": "26460000.0000",
+          "workingCapital": "70560000.0000",
+          "changeWorkingCapital": "-19440000.0000",
+          "fcff": "81180000.00000",
+          "discountFactor": "0.87719298245614035087719298245614035087719298245614",
+          "presentValue": "71210526.315789473684210526315789473684210526315789"
+        },
+        {
+          "year": 2027,
+          "revenue": "463050000.0000",
+          "ebit": "92610000.000000",
+          "nopat": "74088000.0000000",
+          "depreciation": "18522000.000000",
+          "capex": "27783000.000000",
+          "workingCapital": "74088000.000000",
+          "changeWorkingCapital": "3528000.000000",
+          "fcff": "61299000.0000000",
+          "discountFactor": "0.76946752847029855340104647583871960603262542320714",
+          "presentValue": "47167590.027700831024930747922437673130193905817174"
+        },
+        {
+          "year": 2028,
+          "revenue": "486202500.000000",
+          "ebit": "97240500.00000000",
+          "nopat": "77792400.000000000",
+          "depreciation": "19448100.00000000",
+          "capex": "29172150.00000000",
+          "workingCapital": "77792400.00000000",
+          "changeWorkingCapital": "3704400.00000000",
+          "fcff": "64363950.000000000",
+          "discountFactor": "0.67497151620201627491319866301642070704616265193609",
+          "presentValue": "43443832.920250765417699373086455751567283860621082"
+        },
+        {
+          "year": 2029,
+          "revenue": "510512625.00000000",
+          "ebit": "102102525.0000000000",
+          "nopat": "81682020.00000000000",
+          "depreciation": "20420505.0000000000",
+          "capex": "30630757.5000000000",
+          "workingCapital": "81682020.0000000000",
+          "changeWorkingCapital": "3889620.0000000000",
+          "fcff": "67582147.50000000000",
+          "discountFactor": "0.59208027737018971483613917808457956758435320345271",
+          "presentValue": "40014056.637073073411038896263840823811971976887839"
+        },
+        {
+          "year": 2030,
+          "revenue": "536038256.2500000000",
+          "ebit": "107207651.250000000000",
+          "nopat": "85766121.0000000000000",
+          "depreciation": "21441530.250000000000",
+          "capex": "32162295.375000000000",
+          "workingCapital": "85766121.000000000000",
+          "changeWorkingCapital": "4084101.000000000000",
+          "fcff": "70961254.8750000000000",
+          "discountFactor": "0.51936866435981553932994664744261365577574842408132",
+          "presentValue": "36855052.165725199194377930769327074563658399765114"
+        }
+      ]
+    }
+  },
+  "relative": {
+    "Bear": {
+      "pe": {
+        "value": null,
+        "code": "not_meaningful"
+      },
+      "pb": {
+        "value": null,
+        "code": "not_meaningful"
+      },
+      "evEbitda": {
+        "value": null,
+        "code": "not_meaningful"
+      }
+    },
+    "Base": {
+      "pe": {
+        "value": null,
+        "code": "not_meaningful"
+      },
+      "pb": {
+        "value": null,
+        "code": "not_meaningful"
+      },
+      "evEbitda": {
+        "value": null,
+        "code": "not_meaningful"
+      }
+    },
+    "Bull": {
+      "pe": {
+        "value": null,
+        "code": "not_meaningful"
+      },
+      "pb": {
+        "value": null,
+        "code": "not_meaningful"
+      },
+      "evEbitda": {
+        "value": null,
+        "code": "not_meaningful"
+      }
+    }
+  },
+  "sensitivity": [
+    {
+      "wacc": "0.14",
+      "growth": "0.00",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.14",
+      "growth": "0.005",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.14",
+      "growth": "0.01",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.14",
+      "growth": "0.015",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.14",
+      "growth": "0.02",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.15",
+      "growth": "0.00",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.15",
+      "growth": "0.005",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.15",
+      "growth": "0.01",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.15",
+      "growth": "0.015",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.15",
+      "growth": "0.02",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.16",
+      "growth": "0.00",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.16",
+      "growth": "0.005",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.16",
+      "growth": "0.01",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.16",
+      "growth": "0.015",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.16",
+      "growth": "0.02",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.17",
+      "growth": "0.00",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.17",
+      "growth": "0.005",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.17",
+      "growth": "0.01",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.17",
+      "growth": "0.015",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.17",
+      "growth": "0.02",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.18",
+      "growth": "0.00",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.18",
+      "growth": "0.005",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.18",
+      "growth": "0.01",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.18",
+      "growth": "0.015",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    },
+    {
+      "wacc": "0.18",
+      "growth": "0.02",
+      "result": {
+        "value": null,
+        "code": "missing_data"
+      }
+    }
+  ]
+}

@@ -1,0 +1,443 @@
+{
+  "version": "2.0",
+  "industry": "corporate",
+  "symbol": "MOCKDIST",
+  "name": "SYNTHETIC MOCK distressed; not a real company",
+  "currency": "VND",
+  "fiscalYearEndMonth": 12,
+  "sources": [
+    {
+      "id": "SYNTHETIC",
+      "title": "MOCK independent verification: distressed",
+      "url": "",
+      "accessedAt": "2026-10-10",
+      "provenance": "mock"
+    }
+  ],
+  "analysisAsOf": "2026-04-01",
+  "corporateActions": {
+    "reviewedFrom": "2024-09-30",
+    "reviewedThrough": "2026-04-01",
+    "sourceId": "SYNTHETIC",
+    "events": []
+  },
+  "market": {
+    "asOf": "2026-04-01",
+    "sharesAsOf": "2025-12-31",
+    "price": {
+      "value": 1500,
+      "unit": "unit",
+      "sourceId": "SYNTHETIC",
+      "locator": "MOCK quote/shares; not an exchange observation"
+    },
+    "sharesOutstanding": {
+      "value": 0.1,
+      "unit": "million",
+      "sourceId": "SYNTHETIC",
+      "locator": "MOCK quote/shares; not an exchange observation"
+    },
+    "basis": "MOCK same accounting/share basis; no corporate actions"
+  },
+  "reports": [
+    {
+      "id": "FY2024",
+      "kind": "annual",
+      "fiscalYear": 2024,
+      "fiscalQuarter": null,
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31",
+      "scope": "consolidated",
+      "audited": "unaudited",
+      "publishedAt": "2025-03-31",
+      "basis": "MOCK same accounting/share basis; no corporate actions",
+      "fields": {
+        "revenue": {
+          "value": 500,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/revenue"
+        },
+        "costOfRevenue": {
+          "value": 350,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/costOfRevenue"
+        },
+        "grossProfit": {
+          "value": 150,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/grossProfit"
+        },
+        "operatingExpenses": {
+          "value": 110,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/operatingExpenses"
+        },
+        "ebit": {
+          "value": 40,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/ebit"
+        },
+        "interestExpense": {
+          "value": 30,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/interestExpense"
+        },
+        "pretaxIncome": {
+          "value": 10,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/pretaxIncome"
+        },
+        "incomeTax": {
+          "value": 2,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/incomeTax"
+        },
+        "netIncome": {
+          "value": 8,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/netIncome"
+        },
+        "netIncomeToCommon": {
+          "value": 5,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/netIncomeToCommon"
+        },
+        "dilutedEps": {
+          "value": 50,
+          "unit": "unit",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/dilutedEps"
+        },
+        "depreciation": {
+          "value": 20,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/depreciation"
+        },
+        "cash": {
+          "value": 20,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/cash"
+        },
+        "receivables": {
+          "value": 100,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/receivables"
+        },
+        "inventory": {
+          "value": 100,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/inventory"
+        },
+        "currentAssets": {
+          "value": 250,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/currentAssets"
+        },
+        "totalAssets": {
+          "value": 800,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/totalAssets"
+        },
+        "currentLiabilities": {
+          "value": 300,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/currentLiabilities"
+        },
+        "shortTermDebt": {
+          "value": 250,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/shortTermDebt"
+        },
+        "longTermDebt": {
+          "value": 300,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/longTermDebt"
+        },
+        "totalLiabilities": {
+          "value": 720,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/totalLiabilities"
+        },
+        "shareholdersEquity": {
+          "value": 40,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/shareholdersEquity"
+        },
+        "minorityInterest": {
+          "value": 30,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/minorityInterest"
+        },
+        "preferredEquity": {
+          "value": 10,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/preferredEquity"
+        },
+        "nonOperatingAssets": {
+          "value": 40,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/nonOperatingAssets"
+        },
+        "otherClaims": {
+          "value": 25,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/otherClaims"
+        },
+        "operatingWorkingCapital": {
+          "value": 80,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/operatingWorkingCapital"
+        },
+        "cfo": {
+          "value": 20,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/cfo"
+        },
+        "capex": {
+          "value": 35,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/capex"
+        },
+        "cfi": {
+          "value": -35,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/cfi"
+        },
+        "cff": {
+          "value": 15,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2024/annual/FY/cff"
+        }
+      }
+    },
+    {
+      "id": "FY2025",
+      "kind": "annual",
+      "fiscalYear": 2025,
+      "fiscalQuarter": null,
+      "startDate": "2025-01-01",
+      "endDate": "2025-12-31",
+      "scope": "consolidated",
+      "audited": "unaudited",
+      "publishedAt": "2026-03-31",
+      "basis": "MOCK same accounting/share basis; no corporate actions",
+      "fields": {
+        "revenue": {
+          "value": 420,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/revenue"
+        },
+        "costOfRevenue": {
+          "value": 340,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/costOfRevenue"
+        },
+        "grossProfit": {
+          "value": 80,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/grossProfit"
+        },
+        "operatingExpenses": {
+          "value": 110,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/operatingExpenses"
+        },
+        "ebit": {
+          "value": -30,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/ebit"
+        },
+        "interestExpense": {
+          "value": 50,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/interestExpense"
+        },
+        "pretaxIncome": {
+          "value": -80,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/pretaxIncome"
+        },
+        "incomeTax": {
+          "value": 0,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/incomeTax"
+        },
+        "netIncome": {
+          "value": -80,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/netIncome"
+        },
+        "netIncomeToCommon": {
+          "value": -85,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/netIncomeToCommon"
+        },
+        "dilutedEps": {
+          "value": -850,
+          "unit": "unit",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/dilutedEps"
+        },
+        "depreciation": {
+          "value": 25,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/depreciation"
+        },
+        "cash": {
+          "value": 10,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/cash"
+        },
+        "receivables": {
+          "value": null,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/receivables"
+        },
+        "inventory": {
+          "value": 140,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/inventory"
+        },
+        "currentAssets": {
+          "value": 210,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/currentAssets"
+        },
+        "totalAssets": {
+          "value": 750,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/totalAssets"
+        },
+        "currentLiabilities": {
+          "value": 400,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/currentLiabilities"
+        },
+        "shortTermDebt": {
+          "value": 300,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/shortTermDebt"
+        },
+        "longTermDebt": {
+          "value": 380,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/longTermDebt"
+        },
+        "totalLiabilities": {
+          "value": 800,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/totalLiabilities"
+        },
+        "shareholdersEquity": {
+          "value": -100,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/shareholdersEquity"
+        },
+        "minorityInterest": {
+          "value": 35,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/minorityInterest"
+        },
+        "preferredEquity": {
+          "value": 15,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/preferredEquity"
+        },
+        "nonOperatingAssets": {
+          "value": null,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/nonOperatingAssets"
+        },
+        "otherClaims": {
+          "value": 70,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/otherClaims"
+        },
+        "operatingWorkingCapital": {
+          "value": 90,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/operatingWorkingCapital"
+        },
+        "cfo": {
+          "value": -20,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/cfo"
+        },
+        "capex": {
+          "value": 45,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/capex"
+        },
+        "cfi": {
+          "value": -45,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/cfi"
+        },
+        "cff": {
+          "value": 55,
+          "unit": "million",
+          "sourceId": "SYNTHETIC",
+          "locator": "MOCK table distressed/2025/annual/FY/cff"
+        }
+      }
+    }
+  ]
+}

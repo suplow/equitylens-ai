@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Bear",
+    "years": 5,
+    "growth": 0.01,
+    "ebitMargin": 0.1,
+    "taxRate": 0.2,
+    "depreciationRate": 0.04,
+    "capexRate": 0.06,
+    "workingCapitalRate": 0.16,
+    "wacc": 0.18,
+    "terminalGrowth": 0,
+    "peMultiple": 12,
+    "pbMultiple": 1.2,
+    "evEbitdaMultiple": 6
+  },
+  {
+    "name": "Base",
+    "years": 5,
+    "growth": 0.03,
+    "ebitMargin": 0.15,
+    "taxRate": 0.2,
+    "depreciationRate": 0.04,
+    "capexRate": 0.06,
+    "workingCapitalRate": 0.16,
+    "wacc": 0.16,
+    "terminalGrowth": 0.01,
+    "peMultiple": 15,
+    "pbMultiple": 1.5,
+    "evEbitdaMultiple": 8
+  },
+  {
+    "name": "Bull",
+    "years": 5,
+    "growth": 0.05,
+    "ebitMargin": 0.2,
+    "taxRate": 0.2,
+    "depreciationRate": 0.04,
+    "capexRate": 0.06,
+    "workingCapitalRate": 0.16,
+    "wacc": 0.14,
+    "terminalGrowth": 0.02,
+    "peMultiple": 18,
+    "pbMultiple": 1.8,
+    "evEbitdaMultiple": 10
+  }
+]
