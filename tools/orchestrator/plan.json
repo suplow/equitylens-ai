@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "phases": [
+    {
+      "id": "P3", "title": "AI Research Analyst", "dependencies": [],
+      "tasks": [
+        { "id": "P3-1", "objective": "Audit Phase 2.1 acceptance and evaluate supported ChatGPT research integration without extra API costs. Document feasibility and manual fallback before making promises.", "inputs": ["docs/PHASE2_1_REPORT.md", "README.md"], "dependencies": [], "files": ["docs/research"], "acceptance": ["Financial validation limitations are disclosed", "Official integration interfaces and cost boundaries are evidenced"], "tests": ["lint", "typecheck", "test"], "maxRetries": 1 },
+        { "id": "P3-2", "objective": "Integrate financial outputs and source lineage into structured research packets with evidence checks, bull/bear thesis and risk workflow. Preserve manual ChatGPT handoff.", "inputs": ["docs/PHASE2_1_REPORT.md"], "dependencies": ["P3-1"], "files": ["src/lib/research", "src/components", "docs/research"], "acceptance": ["No invented metrics or silently verified sources", "Missing evidence blocks unsupported assertions"], "tests": ["lint", "typecheck", "test", "build", "test:e2e"], "maxRetries": 1 },
+        { "id": "P3-3", "objective": "Add independent AI evaluation/regression fixtures for evidence, hallucinations and prompt injection. Document observed results and remaining limitations.", "inputs": ["docs/research"], "dependencies": ["P3-2"], "files": ["src/lib/research", "tests", "docs"], "acceptance": ["Adversarial and missing-source cases are tested", "AI interpretations remain distinguishable from facts"], "tests": ["lint", "typecheck", "test", "build", "test:e2e"], "maxRetries": 1 }
+      ]
+    },
+    {
+      "id": "P4", "title": "Vietnam Market Data", "dependencies": ["P3"],
+      "tasks": [
+        { "id": "P4-1", "objective": "Research Vietnam data providers, access, licensing and update rights. Do not purchase services or bypass protected sources.", "inputs": ["README.md"], "dependencies": ["P3-3"], "files": ["docs/research"], "acceptance": ["Each provider has dated evidence and a permitted-use assessment", "Unavailable access remains explicitly blocked"], "tests": ["lint", "typecheck", "test"], "maxRetries": 1 },
+        { "id": "P4-2", "objective": "Implement only authorized source adapters, statement normalization, freshness, provenance and corporate-action-aware prices. Schedule updates only when permitted and owner configured.", "inputs": ["docs/research"], "dependencies": ["P4-1"], "files": ["src/lib/data", "src/lib/financial", "tests", "docs"], "acceptance": ["Unit, period and corporate action errors fail closed", "Independent financial fixtures verify normalization", "No paid provider or silent service installation"], "tests": ["lint", "typecheck", "test", "build", "test:e2e"], "maxRetries": 1 }
+      ]
+    },
+    {
+      "id": "P5", "title": "Product Readiness", "dependencies": ["P4"],
+      "tasks": [
+        { "id": "P5-1", "objective": "Review production architecture, authentication, security, database and backup requirements. Document a deployment and monitoring plan without deploying.", "inputs": ["README.md"], "dependencies": ["P4-2"], "files": ["docs"], "acceptance": ["Risks and recovery procedures documented", "Paid infrastructure and destructive migrations remain separately gated"], "tests": ["lint", "typecheck", "test"], "maxRetries": 1 },
+        { "id": "P5-2", "objective": "Implement source-grounded research report generation and PDF export; validate accessibility, performance and operating procedures.", "inputs": ["docs"], "dependencies": ["P5-1"], "files": ["src", "tests", "docs"], "acceptance": ["Reports show valuation dates, assumptions and source lineage", "Accessibility/performance evidence and operating manual provided", "No automatic production deployment"], "tests": ["lint", "typecheck", "test", "build", "test:e2e"], "maxRetries": 1 }
+      ]
+    }
+  ]
+}

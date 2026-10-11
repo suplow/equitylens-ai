@@ -17,7 +17,11 @@ Dashboard nghiên cứu cổ phiếu Việt Nam, chạy cục bộ với Next.js
 - [Phương pháp định giá và giới hạn](docs/VALUATION_METHODS.md)
 - [Báo cáo thực hiện Phase 2](docs/PHASE2_REPORT.md)
 
-## Chạy trên máy
+## Project Manager local (orchestrator)
+
+Bộ điều phối riêng chạy bằng `npm run orchestrator`, mở `http://127.0.0.1:4310`. Phase 3–5 đang **PLANNED**, chưa được phê duyệt hoặc khởi động. Mặc định bàn giao worker thủ công; Codex CLI là adapter opt-in thử nghiệm. Xem [hướng dẫn Windows, vận hành và recovery](tools/orchestrator/README.md), [roadmap](project/ROADMAP.md) và [báo cáo kiểm thử](docs/ORCHESTRATOR_REPORT.md). Phase 2.1 chưa hoàn thành tại baseline này; orchestrator không thay thế việc kiểm chứng Financial Engine.
+
+## Chạy ứng dụng tài chính trên máy
 
 Đã kiểm tra trên Windows, Node.js 25.2.1 và npm 11.6.2.
 

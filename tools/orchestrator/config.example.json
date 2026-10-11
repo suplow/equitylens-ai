@@ -1,0 +1,12 @@
+{
+  "documentationOnly": true,
+  "launch": "npm run orchestrator",
+  "bind": "127.0.0.1",
+  "port": 4310,
+  "defaultWorker": "manual",
+  "experimentalOptIn": "npm run orchestrator -- --codex=C:/absolute/path/to/codex.exe",
+  "maxWritersPerWorktree": 1,
+  "quotaMinimumCooldownMinutes": 60,
+  "automaticallyStartPhases": false,
+  "automaticallyDeploy": false
+}

@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EquityLens · Project Manager</title><link rel="stylesheet" href="/dashboard.css"><script src="/dashboard.js" defer></script></head>
+<body><header><span class="brand">EQUITYLENS <b>AI</b></span><span>PROJECT CONTROL · LOCAL</span></header><main>
+<h1>Project Manager</h1><p>Phê duyệt phạm vi, theo dõi kiểm thử và tiếp tục công việc có kiểm soát.</p>
+<aside>Phase 3–5 chưa được phê duyệt. Thao tác Approve và Accept dành cho chủ dự án. Stop/Pause ngăn công việc mới; worker đang chạy được chờ kết thúc.</aside>
+<p id="message" role="status" aria-live="polite"></p><section class="summary" id="summary"></section>
+<div class="toolbar"><button id="refresh">Làm mới</button><button id="stop" class="danger">Stop — ngừng nhận task</button></div>
+<h2>Phases & approvals</h2><section id="phases" class="phases"></section>
+<h2>Task queue</h2><section id="tasks"></section>
+<h2>Git & checkpoint</h2><pre id="checkpoint"></pre>
+<h2>Event log</h2><pre id="events"></pre>
+</main></body></html>

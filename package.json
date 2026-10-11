@@ -9,7 +9,10 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "orchestrator": "node tools/orchestrator/server.mjs",
+    "test:orchestrator": "node --test tools/orchestrator/*.test.mjs",
+    "test:orchestrator:browser": "node tools/orchestrator/browser-check.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.4.0",

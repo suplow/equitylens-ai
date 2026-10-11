@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "revision": 0,
+  "planHash": "970acde8cf322f64229127bfc1fcf3fa6df38cb5352b0626cb8079a025054dda",
+  "stopped": false,
+  "phases": [
+    {
+      "id": "P3",
+      "title": "AI Research Analyst",
+      "state": "PLANNED",
+      "approval": null,
+      "error": null
+    },
+    {
+      "id": "P4",
+      "title": "Vietnam Market Data",
+      "state": "PLANNED",
+      "approval": null,
+      "error": null
+    },
+    {
+      "id": "P5",
+      "title": "Product Readiness",
+      "state": "PLANNED",
+      "approval": null,
+      "error": null
+    }
+  ]
+}

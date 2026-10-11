@@ -94,6 +94,8 @@ test("all destinations retain symbol and incomplete features are honest", async 
     .locator(".sidebar")
     .getByRole("link", { name: "Định giá", exact: true })
     .click();
+  await expect(page).toHaveURL(/valuation\/HPG$/);
+  await expect(page.getByRole("heading", { name: "Định giá theo dữ liệu và giả định minh bạch.", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Dữ liệu minh họa Phase 1", exact: true }).click();
   await expect(
     page.getByText("Không có kết quả định giá trong Phase 1."),
