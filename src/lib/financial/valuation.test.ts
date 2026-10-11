@@ -17,7 +17,7 @@ describe("DCF golden cases independently calculated", () => {
   it("reconciles every equity bridge item and actual shares", () => {
     expect(value(equityBridge(1000, bridge))).toEqual({ equityValue: 985, intrinsicValuePerShare: 98.5 });
     // Constant 100 cash flow forever has EV = 100 / 10% = 1000.
-    const result = value(discountCashFlows([100, 100], .1, 0, bridge, 80));
+    const result = value(discountCashFlows([100, 100], .1, 0, bridge, 80, { valuationAsOf: "2025-12-31", marketAsOf: "2025-12-31", sharesAsOf: "2025-12-31", analysisAsOf: "2025-12-31" }));
     expect(result.enterpriseValue).toBeCloseTo(1000);
     expect(result.equityValue).toBeCloseTo(985);
     expect(result.intrinsicValuePerShare).toBeCloseTo(98.5);
@@ -54,7 +54,8 @@ describe("data-backed scenarios and sensitivity", () => {
     }
     d.market!.sharesOutstanding.value! *= 1e6; d.market!.sharesOutstanding.unit = "unit";
     const scaled = value(evaluateScenario(d, "FY2025", a));
-    expect(scaled.intrinsicValuePerShare).toBeCloseTo(baseline.intrinsicValuePerShare, 6);
+    expect(baseline.intrinsicValuePerShare).not.toBeNull();
+    expect(scaled.intrinsicValuePerShare).toBeCloseTo(baseline.intrinsicValuePerShare!, 6);
   });
   it("recomputes growth, EBIT, working capital, capex and FCFF from base annual data", () => {
     const data = sample(), assumptions = defaultScenarios(true)[1];
@@ -78,10 +79,11 @@ describe("data-backed scenarios and sensitivity", () => {
     const d = sample(), s = defaultScenarios(true)[1];
     const base = value(evaluateScenario(d, "FY2025", s));
     const higherDiscount = value(evaluateScenario(d, "FY2025", { ...s, wacc: s.wacc! + .02 }));
-    expect(higherDiscount.intrinsicValuePerShare).toBeLessThan(base.intrinsicValuePerShare);
+    expect(base.intrinsicValuePerShare).not.toBeNull();
+    expect(higherDiscount.intrinsicValuePerShare).toBeLessThan(base.intrinsicValuePerShare!);
     const cells = sensitivity(d, "FY2025", s);
     expect(cells).toHaveLength(25);
-    expect(value(cells[12].result).intrinsicValuePerShare).toBeCloseTo(base.intrinsicValuePerShare);
+    expect(value(cells[12].result).intrinsicValuePerShare).toBeCloseTo(base.intrinsicValuePerShare!);
     expect(cells.find(c => c.wacc === s.wacc && c.growth === s.terminalGrowth)).toBeDefined();
   });
   it("blocks banks, securities and insurance even if user supplies plausible assumptions", () => {

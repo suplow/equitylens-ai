@@ -1,16 +1,19 @@
 import { z } from "zod";
-import { factValue, normalizeReport } from "./schema";
-import { accountingIssues, marketGuard, openingReport } from "./ratios";
+import { factValue, isDate, normalizeReport } from "./schema";
+import { accountingIssues, openingReport } from "./ratios";
+import { resolveOpening, validPeriod } from "./periods";
+import { comparisonDateGuard, valuationDates, type ComparisonDates } from "./dates";
 import { failure, finiteResult, success } from "./result";
 import type { Calculation, CorporateDataset, CorporateField, CorporateReport, FinancialDataset } from "./types";
 
 type N = number | null;
 export interface EquityBridge { cash: N; debt: N; nonOperatingAssets: N; minorityInterest: N; preferredEquity: N; otherClaims: N; sharesOutstanding: N }
 export interface ScenarioAssumptions {
+  stableState?: { confirmed: boolean; rationale: string };
   name: "Bear" | "Base" | "Bull"; years: number; growth: N; ebitMargin: N; taxRate: N; depreciationRate: N; capexRate: N; workingCapitalRate: N; wacc: N; terminalGrowth: N; peMultiple: N; pbMultiple: N; evEbitdaMultiple: N;
 }
 export interface Projection { year: number; revenue: number; ebit: number; nopat: number; depreciation: number; capex: number; workingCapital: number; changeWorkingCapital: number; fcff: number; discountFactor: number; presentValue: number }
-export interface RelativeOutput { enterpriseValue: number | null; equityValue: number; intrinsicValuePerShare: number; upside: number | null; marginOfSafety: number | null }
+export interface RelativeOutput { enterpriseValue: number | null; equityValue: number; intrinsicValuePerShare: number | null; upside: number | null; marginOfSafety: number | null }
 export interface DcfValues extends RelativeOutput { enterpriseValue: number; pvForecast: number; terminalValue: number; pvTerminal: number; terminalContribution: number }
 export interface DcfOutput extends DcfValues {
   projections: Projection[]; bridge: EquityBridge; historicalFcff: Calculation<number>;
@@ -19,7 +22,7 @@ export interface DcfOutput extends DcfValues {
 }
 const input = (...values: N[]): Calculation<number[]> => values.some(v => v === null) ? failure("missing_data", "Thiếu đầu vào/giả định. Khoản bằng 0 phải được nhập rõ, không tự thay null.") : values.some(v => !Number.isFinite(v) || Math.abs(v!) > Number.MAX_SAFE_INTEGER) ? failure("invalid", "Số đầu vào không hữu hạn hoặc vượt phạm vi an toàn.") : success(values as number[]);
 const rate = z.number().finite().nullable();
-const assumptionSchema = z.object({ name: z.enum(["Bear", "Base", "Bull"]), years: z.number().int().min(1).max(10), growth: rate, ebitMargin: rate, taxRate: rate, depreciationRate: rate, capexRate: rate, workingCapitalRate: rate, wacc: rate, terminalGrowth: rate, peMultiple: rate, pbMultiple: rate, evEbitdaMultiple: rate }).strict();
+const assumptionSchema = z.object({ name: z.enum(["Bear", "Base", "Bull"]), years: z.number().int().min(1).max(10), growth: rate, ebitMargin: rate, taxRate: rate, depreciationRate: rate, capexRate: rate, workingCapitalRate: rate, wacc: rate, terminalGrowth: rate, peMultiple: rate, pbMultiple: rate, evEbitdaMultiple: rate, stableState: z.object({ confirmed: z.boolean(), rationale: z.string().max(1500) }).strict().optional() }).strict();
 export function parseScenarios(raw: string): Calculation<ScenarioAssumptions[]> {
   if (raw.length > 20000) return failure("invalid", "Tệp giả định quá lớn.");
   let data: unknown; try { data = JSON.parse(raw.replace(/^\uFEFF/, "")); } catch { return failure("invalid", "JSON giả định không hợp lệ."); }
@@ -54,19 +57,22 @@ export function terminalValue(lastFcff: N, wacc: N, terminalGrowth: N): Calculat
   if (lastFcff! <= 0) return failure("not_meaningful", "Mô hình Gordon hiện chỉ dùng FCFF năm cuối dương; cần mô hình chuyển tiếp khi dòng tiền còn âm.");
   return finiteResult(lastFcff! * (1 + terminalGrowth!) / (wacc! - terminalGrowth!));
 }
-export function equityBridge(enterpriseValue: N, bridge: EquityBridge): Calculation<{ equityValue: number; intrinsicValuePerShare: number }> {
-  const checked = input(enterpriseValue, ...Object.values(bridge)); if (!checked.ok) return checked;
-  if (Object.values(bridge).some(v => v! < 0) || bridge.sharesOutstanding! <= 0) return failure("not_meaningful", "Các khoản cầu nối không âm và số cổ phiếu phải dương.");
+export function equityBridge(enterpriseValue: N, bridge: EquityBridge): Calculation<{ equityValue: number; intrinsicValuePerShare: number | null }> {
+  const { sharesOutstanding, ...claims } = bridge;
+  const checked = input(enterpriseValue, ...Object.values(claims)); if (!checked.ok) return checked;
+  if (Object.values(claims).some(v => v! < 0) || (sharesOutstanding !== null && (!Number.isFinite(sharesOutstanding) || sharesOutstanding <= 0))) return failure("not_meaningful", "Các khoản cầu nối không âm và số cổ phiếu phải dương hoặc thiếu có giải thích.");
   const equityValue = enterpriseValue! + bridge.cash! + bridge.nonOperatingAssets! - bridge.debt! - bridge.minorityInterest! - bridge.preferredEquity! - bridge.otherClaims!;
   if (!finiteResult(equityValue).ok) return failure("invalid", "Giá trị vốn chủ vượt phạm vi an toàn.");
   if (equityValue <= 0) return failure("not_meaningful", "Giá trị vốn chủ theo mô hình không dương; không hiển thị giá nội tại/MOS như một kết quả đầu tư hợp lệ.");
+  if (sharesOutstanding === null) return success({ equityValue, intrinsicValuePerShare: null }, ["Khóa giá trị/cổ phiếu: thiếu số cổ phiếu đúng ngày định giá."]);
   const perShare = finiteResult(equityValue / bridge.sharesOutstanding!);
   return perShare.ok ? success({ equityValue, intrinsicValuePerShare: perShare.value }) : perShare;
 }
-function comparison(intrinsic: number, price: N) {
+function comparison(intrinsic: N, price: N, dates?: ComparisonDates) {
+  if (intrinsic === null || !comparisonDateGuard(dates).ok) return { upside: null, marginOfSafety: null };
   return { upside: price !== null && price > 0 ? (intrinsic - price) / price : null, marginOfSafety: price !== null && price > 0 ? (intrinsic - price) / intrinsic : null };
 }
-export function discountCashFlows(flows: N[], wacc: N, terminalGrowth: N, bridge: EquityBridge, referencePrice: N): Calculation<DcfValues> {
+export function discountCashFlows(flows: N[], wacc: N, terminalGrowth: N, bridge: EquityBridge, referencePrice: N, dates?: ComparisonDates): Calculation<DcfValues> {
   if (flows.length === 0 || flows.length > 10) return failure("invalid", "Dự phóng từ 1 đến 10 năm.");
   const checked = input(...flows, wacc, terminalGrowth); if (!checked.ok) return checked;
   if (referencePrice !== null && (!Number.isFinite(referencePrice) || referencePrice <= 0)) return failure("invalid", "Giá tham chiếu phải dương hoặc null.");
@@ -79,25 +85,29 @@ export function discountCashFlows(flows: N[], wacc: N, terminalGrowth: N, bridge
   const equity = equityBridge(enterpriseValue, bridge); if (!equity.ok) return equity;
   if (enterpriseValue <= 0) return failure("not_meaningful", "Giá trị hoạt động không dương; mô hình không đủ điều kiện kết luận.");
   const terminalContribution = pvTerminal / enterpriseValue;
-  const comparisons = comparison(equity.value.intrinsicValuePerShare, referencePrice);
+  const comparisons = comparison(equity.value.intrinsicValuePerShare, referencePrice, dates);
   if (Object.values(comparisons).some(v => v !== null && !Number.isFinite(v))) return failure("invalid", "So sánh giá vượt phạm vi số.");
-  return success({ ...equity.value, ...comparisons, enterpriseValue, pvForecast, terminalValue: tv.value, pvTerminal, terminalContribution }, ["DCF là kết quả có điều kiện theo giả định, không phải dự báo giá chắc chắn.", ...(terminalContribution > .75 ? ["Trên 75% EV đến từ terminal value; kết quả nhạy với WACC/g. Đây là ngưỡng cảnh báo mô hình, không là quy tắc đầu tư."] : [])]);
+  const dateGuard = comparisonDateGuard(dates);
+  return success({ ...equity.value, ...comparisons, enterpriseValue, pvForecast, terminalValue: tv.value, pvTerminal, terminalContribution }, [...equity.warnings, ...(!dateGuard.ok ? dateGuard.issues : []), "DCF là kết quả có điều kiện theo giả định, không phải dự báo giá chắc chắn.", ...(terminalContribution > .75 ? ["Trên 75% EV đến từ terminal value; kết quả nhạy với WACC/g. Đây là ngưỡng cảnh báo mô hình, không là quy tắc đầu tư."] : [])]);
 }
 function datasetContext(data: FinancialDataset, reportId: string): Calculation<{ data: CorporateDataset; report: CorporateReport }> {
   if (data.industry !== "corporate") return failure("unsupported", "Khóa định giá ngân hàng/chứng khoán/bảo hiểm. Cần schema đầy đủ và mô hình P/B, residual income hoặc DDM chuyên ngành trước khi sử dụng.");
   const report = data.reports.find(p => p.id === reportId);
   if (!report) return failure("missing_data", "Chưa có kỳ tài chính được chọn.");
-  const guard = marketGuard(data, report); if (!guard.ok) return guard;
+  if (report.kind !== "annual" || report.derived || !validPeriod(data, report)) return failure("incompatible", "Định giá cần báo cáo năm đầy đủ hợp lệ; chưa dự phóng từ quý/YTD/TTM.");
+  if (data.market && data.market.basis !== report.basis) return failure("incompatible", "Cơ sở cổ phiếu và báo cáo không khớp.");
+  if (data.analysisAsOf && (!isDate(data.analysisAsOf) || report.publishedAt > data.analysisAsOf)) return failure("incompatible", "Ngày phân tích không hợp lệ hoặc báo cáo chưa được công bố tại ngày phân tích.");
   const issues = accountingIssues(report); if (issues.length) return failure("incompatible", ...issues);
   return success({ data, report });
 }
 function reportBridge(data: CorporateDataset, report: CorporateReport): EquityBridge {
   const v = normalizeReport(report).values;
-  return { cash: v.cash, debt: v.shortTermDebt === null || v.longTermDebt === null ? null : v.shortTermDebt + v.longTermDebt, nonOperatingAssets: v.nonOperatingAssets, minorityInterest: v.minorityInterest, preferredEquity: v.preferredEquity, otherClaims: v.otherClaims, sharesOutstanding: data.market ? factValue(data.market.sharesOutstanding) : null };
+  return { cash: v.cash, debt: v.shortTermDebt === null || v.longTermDebt === null ? null : v.shortTermDebt + v.longTermDebt, nonOperatingAssets: v.nonOperatingAssets, minorityInterest: v.minorityInterest, preferredEquity: v.preferredEquity, otherClaims: v.otherClaims, sharesOutstanding: data.market?.sharesAsOf === report.endDate ? factValue(data.market.sharesOutstanding) : null };
 }
 export function historicalFcff(data: CorporateDataset, report: CorporateReport): Calculation<number> {
-  const opening = openingReport(data, report), v = normalizeReport(report).values;
-  if (!opening) return failure("missing_data", "Thiếu vốn lưu động hoạt động đầu kỳ cùng scope/basis để tính FCFF lịch sử.");
+  const issues = accountingIssues(report); if (issues.length) return failure("incompatible", ...issues);
+  const selected = resolveOpening(data, report); if (!selected.ok) return selected;
+  const opening = selected.value, v = normalizeReport(report).values;
   if (accountingIssues(opening).length) return failure("incompatible", ...accountingIssues(opening));
   const before = normalizeReport(opening).values.operatingWorkingCapital;
   if (v.pretaxIncome === null || v.incomeTax === null || v.operatingWorkingCapital === null || before === null) return failure("missing_data", "Thiếu thuế hoặc vốn lưu động hoạt động.");
@@ -126,11 +136,15 @@ export function evaluateScenario(dataset: FinancialDataset, reportId: string, as
     projections.push(row); workingCapital = nextWorkingCapital;
   }
   const bridge = reportBridge(data, report), price = data.market ? factValue(data.market.price) : null;
-  const valuation = discountCashFlows(projections.map(r => r.fcff), a.wacc, a.terminalGrowth, bridge, price); if (!valuation.ok) return valuation;
+  const valuation = discountCashFlows(projections.map(r => r.fcff), a.wacc, a.terminalGrowth, bridge, price, valuationDates(data, report)); if (!valuation.ok) return valuation;
+  if (!a.stableState?.confirmed || !a.stableState.rationale.trim()) valuation.warnings.push("Chưa xác nhận trạng thái ổn định: cần giải thích biên lợi nhuận, D&A, CAPEX và vốn lưu động giai đoạn terminal; kết quả chỉ là mô phỏng chưa thẩm định.");
+  if (a.growth !== a.terminalGrowth) valuation.warnings.push("Tăng trưởng dự phóng khác terminal growth: phép kéo dài FCFF không tự chuẩn hóa nhu cầu tái đầu tư/vốn lưu động khi chuyển giai đoạn.");
+  const reinvestment = projections.at(-1)!.capex - projections.at(-1)!.depreciation + projections.at(-1)!.workingCapital * a.terminalGrowth!;
+  if (a.terminalGrowth! > 0 && reinvestment <= 0) valuation.warnings.push("Terminal growth dương nhưng tái đầu tư hàm ý (CAPEX−D&A+g×WC cuối kỳ) không dương. Cần mô hình/nguồn giải thích; không tự ước lượng terminal ROIC.");
   const used: CorporateField[] = ["revenue", "operatingWorkingCapital", "cash", "shortTermDebt", "longTermDebt", "nonOperatingAssets", "minorityInterest", "preferredEquity", "otherClaims", "ebit", "pretaxIncome", "incomeTax", "depreciation", "capex"];
   const opening = openingReport(data, report);
   const sourceIds = [...new Set([...used.map(k => report.fields[k].sourceId), ...(opening ? [opening.fields.operatingWorkingCapital.sourceId] : []), ...(data.market ? [data.market.price.sourceId, data.market.sharesOutstanding.sourceId] : [])])];
-  return success({ ...valuation.value, projections, bridge, historicalFcff: historicalFcff(data, report), assumptions: { ...a }, provenance: { kind: "calculated", containsMock: data.sources.some(s => sourceIds.includes(s.id) && s.provenance === "mock"), sourceIds, reportId: report.id, valuationAsOf: report.endDate, marketAsOf: data.market!.asOf, currency: data.currency } }, [...valuation.warnings, `Chiết khấu về cuối kỳ ${report.endDate}; chưa roll-forward đến ngày giá tham chiếu.`, "Terminal FCFF = FCFF năm cuối × (1+g), giả định tái đầu tư/trạng thái ổn định phải được người dùng kiểm tra; chưa có mô hình ROIC giai đoạn chuyển tiếp.", "Dùng cổ phiếu lưu hành hiện tại; chưa dự phóng pha loãng/corporate actions. Không cộng trùng tiền và tài sản ngoài hoạt động."]);
+  return success({ ...valuation.value, projections, bridge, historicalFcff: historicalFcff(data, report), assumptions: { ...a }, provenance: { kind: "calculated", containsMock: data.sources.some(s => sourceIds.includes(s.id) && s.provenance === "mock"), sourceIds, reportId: report.id, valuationAsOf: report.endDate, marketAsOf: data.market?.asOf ?? "không có", currency: data.currency } }, [...valuation.warnings, `Định giá hồi cứu tại ${report.endDate}; công bố ${report.publishedAt}. Dùng thông tin công bố sau ngày định giá; không phải quyết định có thể thực hiện tại thời điểm quá khứ. Chưa roll-forward đến ngày giá.`, "Terminal FCFF = FCFF năm cuối × (1+g), giả định tái đầu tư/trạng thái ổn định phải được người dùng kiểm tra; chưa có mô hình ROIC giai đoạn chuyển tiếp.", "Giá trị/cổ phiếu chỉ dùng số cổ phiếu cùng ngày định giá. Không tự điều chỉnh chia tách/phát hành hoặc cộng lãi để dịch ngày."]);
 }
 export function sensitivity(data: FinancialDataset, reportId: string, scenario: ScenarioAssumptions): { wacc: number; growth: number; result: Calculation<DcfOutput> }[] {
   if (scenario.wacc === null || scenario.terminalGrowth === null) return [];
@@ -139,27 +153,34 @@ export function sensitivity(data: FinancialDataset, reportId: string, scenario: 
     return { wacc, growth, result: evaluateScenario(data, reportId, { ...scenario, wacc, terminalGrowth: growth }) };
   }));
 }
+export function operatingSensitivity(data: FinancialDataset, reportId: string, scenario: ScenarioAssumptions) {
+  return (["growth", "ebitMargin", "capexRate"] as const).flatMap(key => {
+    const value = scenario[key]; if (value === null) return [];
+    return [-.01, 0, .01].map(change => ({ key, value: value + change, result: evaluateScenario(data, reportId, { ...scenario, [key]: value + change }) }));
+  });
+}
 export function evaluateRelative(dataset: FinancialDataset, reportId: string, method: "pe" | "pb" | "evEbitda", multiple: N): Calculation<RelativeOutput> {
   const context = datasetContext(dataset, reportId); if (!context.ok) return context;
   const checked = input(multiple); if (!checked.ok) return checked;
   if (multiple! <= 0) return failure("not_meaningful", "Hệ số định giá phải dương, có căn cứ người phân tích/nhóm so sánh.");
-  const { data, report } = context.value, v = normalizeReport(report).values, bridge = reportBridge(data, report), price = factValue(data.market!.price);
+  const { data, report } = context.value, v = normalizeReport(report).values, bridge = reportBridge(data, report), price = data.market ? factValue(data.market.price) : null;
+  const dates = valuationDates(data, report), dateGuard = comparisonDateGuard(dates);
   const shares = bridge.sharesOutstanding;
-  if (shares === null) return failure("missing_data", "Thiếu cổ phiếu lưu hành.");
-  if (shares <= 0) return failure("not_meaningful", "Cổ phiếu lưu hành phải dương.");
+  if (shares !== null && shares <= 0) return failure("not_meaningful", "Cổ phiếu lưu hành phải dương.");
   let result: RelativeOutput;
   if (method === "evEbitda") {
     const metrics = input(v.ebit, v.depreciation); if (!metrics.ok) return metrics;
     const ebitda = v.ebit! + v.depreciation!; if (ebitda <= 0) return failure("not_meaningful", "EBITDA không dương: không áp dụng EV/EBITDA.");
     const enterpriseValue = ebitda * multiple!, equity = equityBridge(enterpriseValue, bridge); if (!equity.ok) return equity;
-    result = { enterpriseValue, ...equity.value, ...comparison(equity.value.intrinsicValuePerShare, price) };
+    result = { enterpriseValue, ...equity.value, ...comparison(equity.value.intrinsicValuePerShare, price, dates) };
   } else {
     const metric = method === "pe" ? v.dilutedEps : v.shareholdersEquity;
     if (metric === null) return failure("missing_data", "Thiếu EPS pha loãng hoặc vốn cổ đông thường.");
     if (metric <= 0) return failure("not_meaningful", "EPS/vốn cổ đông thường không dương: hệ số không có ý nghĩa.");
-    const intrinsicValuePerShare = method === "pe" ? metric * multiple! : metric * multiple! / shares;
-    result = { enterpriseValue: null, equityValue: intrinsicValuePerShare * shares, intrinsicValuePerShare, ...comparison(intrinsicValuePerShare, price) };
+    if (method === "pe" && shares === null) return failure("missing_data", "P/E: thiếu cổ phiếu đúng ngày định giá để đối chiếu EPS và vốn chủ; không suy từ số cổ phiếu ngày khác.");
+    const intrinsicValuePerShare = shares === null ? null : method === "pe" ? metric * multiple! : metric * multiple! / shares;
+    result = { enterpriseValue: null, equityValue: method === "pe" ? intrinsicValuePerShare! * shares! : metric * multiple!, intrinsicValuePerShare, ...comparison(intrinsicValuePerShare, price, dates) };
   }
   if (Object.values(result).some(v => v !== null && !finiteResult(v).ok)) return failure("invalid", "Định giá tương đối vượt phạm vi an toàn.");
-  return success(result, ["Hệ số là giả định; cần nguồn và điều chỉnh khác biệt peer. P/E dùng EPS pha loãng năm, tổng vốn chủ suy từ giá/cp × cổ phiếu hiện tại. Không bảo đảm giá thị trường sẽ đạt kết quả."]);
+  return success(result, [...(!dateGuard.ok ? dateGuard.issues : []), `Định giá hồi cứu tại ${report.endDate}, báo cáo công bố ${report.publishedAt}.`, "Hệ số là giả định; cần nguồn và điều chỉnh khác biệt peer. P/E dùng EPS pha loãng năm, tổng vốn chủ quy ước suy từ giá/cp × cổ phiếu đúng ngày định giá; không thay thế weighted diluted shares. Không bảo đảm giá thị trường sẽ đạt kết quả."]);
 }

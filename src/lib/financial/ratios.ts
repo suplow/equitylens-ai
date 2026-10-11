@@ -1,5 +1,7 @@
 import { factValue, normalizeReport, UNIT_SCALE } from "./schema";
 import { failure, finiteResult, success } from "./result";
+import { compatibleAnnualHistory, comparablePeriod, resolveOpening, validPeriod } from "./periods";
+import { marketDateGuard } from "./dates";
 import type { Calculation, CorporateDataset, CorporateField, CorporateReport, FinancialDataset, InputEvidence, NormalizedReport, RatioResult } from "./types";
 type N = number | null;
 const valid = (...values: N[]): Calculation<number[]> => values.some(v => v === null) ? failure("missing_data", "Thiếu đầu vào; không thay null bằng 0.") : values.some(v => !Number.isFinite(v) || Math.abs(v!) > Number.MAX_SAFE_INTEGER) ? failure("invalid", "Đầu vào không hữu hạn hoặc vượt phạm vi an toàn.") : success(values as number[]);
@@ -81,22 +83,19 @@ export function getDatasetWarnings(data: FinancialDataset): string[] {
   if (data.industry !== "corporate") return [...messages, "Schema định chế tài chính mới là khung riêng. Khóa tỷ số doanh nghiệp thông thường và định giá cho đến khi có mô hình chuyên ngành."];
   return [...messages, ...data.reports.flatMap(accountingIssues), "Số dư bình quân cần kỳ kết thúc ngay trước đầu kỳ và cùng phạm vi/basis. Tỷ số theo đúng độ dài kỳ, không tự annualize."];
 }
-export function getHistoricalRows(data: FinancialDataset) {
+export function getHistoricalRows(data: FinancialDataset, reportId?: string) {
   if (data.industry !== "corporate") return [];
   // Annual trends only: never join YTD and standalone quarters as though comparable.
-  const annual = data.reports.filter(p => p.kind === "annual").sort((a, b) => a.endDate.localeCompare(b.endDate));
-  const latest = annual.at(-1);
-  return annual.filter(p => p.scope === latest?.scope && p.basis === latest?.basis).map(p => { const v = normalizeReport(p).values; return { period: p.id, revenue: v.revenue, netIncome: v.netIncome, cfo: v.cfo }; });
+  return compatibleAnnualHistory(data, data.reports.find(p => p.id === reportId)).map(p => { const v = normalizeReport(p).values; return { period: p.id, revenue: v.revenue, netIncome: v.netIncome, cfo: v.cfo }; });
 }
 export function openingReport(data: CorporateDataset, current: CorporateReport): CorporateReport | undefined {
-  const date = new Date(current.startDate + "T00:00:00Z"); date.setUTCDate(date.getUTCDate() - 1);
-  return data.reports.find(p => p.endDate === date.toISOString().slice(0, 10) && p.scope === current.scope && p.basis === current.basis && p.id !== current.id);
+  const result = resolveOpening(data, current); return result.ok ? result.value : undefined;
 }
 export function marketGuard(data: CorporateDataset, period: CorporateReport): Calculation<true> {
-  if (period.kind !== "annual") return failure("incompatible", "Chỉ tính chỉ số thị trường/DCF từ năm đầy đủ; chưa xây TTM.");
+  if (period.kind !== "annual") return failure("incompatible", "Chỉ tính chỉ số thị trường từ năm đầy đủ hoặc TTM đã dựng; không dùng trực tiếp quý/YTD.");
   if (!data.market) return failure("missing_data", "Thiếu giá tham chiếu, số cổ phiếu và ngày chốt.");
   if (data.market.asOf < period.publishedAt || data.market.basis !== period.basis) return failure("incompatible", "Ngày giá phải từ ngày công bố trở đi và cùng cơ sở cổ phiếu/basis.");
-  return success(true);
+  return marketDateGuard(data, period);
 }
 type Values = NormalizedReport["values"];
 type Context = { v: Values; o: Values | null; p: Values | null; first: Values | null; years: number; days: number; price: N; shares: N };
@@ -140,9 +139,9 @@ export function analyzeRatios(data: FinancialDataset, reportId: string): RatioRe
   const report = data.industry === "corporate" ? data.reports.find(r => r.id === reportId) : undefined;
   const current = report ? normalizeReport(report) : null;
   const opening = data.industry === "corporate" && report ? openingReport(data, report) : undefined;
-  const previous = data.industry === "corporate" && report ? data.reports.find(p => p.kind === report.kind && p.fiscalYear === report.fiscalYear - 1 && p.fiscalQuarter === report.fiscalQuarter && p.scope === report.scope && p.basis === report.basis) : undefined;
-  const first = data.industry === "corporate" && report?.kind === "annual" ? data.reports.filter(p => p.kind === "annual" && p.scope === report.scope && p.basis === report.basis && p.fiscalYear < report.fiscalYear).sort((a,b) => a.fiscalYear - b.fiscalYear)[0] : undefined;
-  const evidence = (p: CorporateReport | undefined, keys: CorporateField[]): InputEvidence[] => p ? keys.map(key => ({ key, value: factValue(p.fields[key]), sourceId: p.fields[key].sourceId, locator: p.fields[key].locator, periodId: p.id })) : [];
+  const previous = data.industry === "corporate" && report ? comparablePeriod(data, report) : undefined;
+  const first = data.industry === "corporate" && report?.kind === "annual" && !report.derived ? compatibleAnnualHistory(data, report).find(p => p.fiscalYear < report.fiscalYear) : undefined;
+  const evidence = (p: CorporateReport | undefined, keys: CorporateField[]): InputEvidence[] => p?.derived ? p.derived.inputs.filter(i => keys.includes(i.key as CorporateField)) : p ? keys.map(key => ({ key, value: factValue(p.fields[key]), sourceId: p.fields[key].sourceId, locator: p.fields[key].locator, periodId: p.id })) : [];
   return RATIO_DEFINITIONS.map(definition => {
     const inputs = [...evidence(report, definition.fields), ...evidence(opening, definition.opening ?? []), ...evidence(previous, definition.previous ?? []), ...(definition.id === "revenueCagr" ? evidence(first, ["revenue"]) : [])];
     if (definition.market && data.market) for (const key of ["price", "sharesOutstanding"] as const) inputs.push({ key, value: factValue(data.market[key]), sourceId: data.market[key].sourceId, locator: data.market[key].locator, periodId: `market@${data.market.asOf}` });
@@ -150,8 +149,10 @@ export function analyzeRatios(data: FinancialDataset, reportId: string): RatioRe
     let result: Calculation<number>;
     if (data.industry !== "corporate") result = failure("unsupported", "Không áp dụng Ratio Engine doanh nghiệp phi tài chính cho ngân hàng/chứng khoán/bảo hiểm.");
     else if (!report || !current) result = failure("missing_data", "Chưa chọn kỳ báo cáo.");
+    else if (!validPeriod(data, report)) result = failure("incompatible", "Kỳ báo cáo không khớp lịch tài chính.");
     else if (accountingIssues(report).length) result = failure("incompatible", ...accountingIssues(report));
-    else if (definition.opening && (!opening || accountingIssues(opening).length)) result = failure("incompatible", "Thiếu hoặc mâu thuẫn số dư đầu kỳ cùng phạm vi/basis.");
+    else if (definition.opening && !opening) result = resolveOpening(data, report) as Calculation<never>;
+    else if (definition.opening && opening && accountingIssues(opening).length) result = failure("incompatible", "Số dư đầu kỳ có mâu thuẫn kế toán.");
     else if (definition.previous && (!previous || accountingIssues(previous).length)) result = failure("incompatible", "Thiếu hoặc mâu thuẫn kỳ so sánh cùng kỳ/scope/basis.");
     else if (definition.id === "revenueCagr" && first && accountingIssues(first).length) result = failure("incompatible", "Báo cáo năm đầu CAGR có số liệu mâu thuẫn.");
     else if (definition.market && !marketGuard(data, report).ok) result = marketGuard(data, report) as Calculation<never>;

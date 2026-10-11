@@ -11,24 +11,33 @@ export interface PeriodMetadata {
   audited: "audited" | "reviewed" | "unaudited" | "unknown"; publishedAt: string;
   /** Same accounting/restatement and share-adjustment basis across comparable periods. */
   basis: string;
+  openingReportId?: string;
+  restatement?: { status: "original" | "restated"; revision: string; note: string };
 }
 export const INCOME_FIELDS = ["revenue", "costOfRevenue", "grossProfit", "operatingExpenses", "ebit", "interestExpense", "pretaxIncome", "incomeTax", "netIncome", "netIncomeToCommon", "dilutedEps", "depreciation"] as const;
 export const BALANCE_FIELDS = ["cash", "receivables", "inventory", "currentAssets", "totalAssets", "currentLiabilities", "shortTermDebt", "longTermDebt", "totalLiabilities", "shareholdersEquity", "minorityInterest", "preferredEquity", "nonOperatingAssets", "otherClaims", "operatingWorkingCapital"] as const;
 export const CASH_FIELDS = ["cfo", "capex", "cfi", "cff"] as const;
 export const CORPORATE_FIELDS = [...INCOME_FIELDS, ...BALANCE_FIELDS, ...CASH_FIELDS] as const;
 export type CorporateField = typeof CORPORATE_FIELDS[number];
-export interface CorporateReport extends PeriodMetadata { fields: Record<CorporateField, Fact> }
+export interface CorporateReport extends PeriodMetadata {
+  fields: Record<CorporateField, Fact>;
+  /** Internal calculated report only; the JSON input schema rejects this field. */
+  derived?: { method: string; inputs: InputEvidence[]; reportIds: string[] };
+}
 export interface BankReport extends PeriodMetadata { bank: { netInterestIncome: Fact; grossLoans: Fact; nonPerformingLoans: Fact; regulatoryCapital: Fact; riskWeightedAssets: Fact } }
 export interface SecuritiesReport extends PeriodMetadata { securities: { brokerageRevenue: Fact; tradingAssets: Fact; clientMoney: Fact } }
 export interface InsuranceReport extends PeriodMetadata { insurance: { insuranceRevenue: Fact; claimsExpense: Fact; insuranceLiabilities: Fact } }
 export interface MarketSnapshot {
   asOf: string; price: Fact; sharesOutstanding: Fact;
+  sharesAsOf?: string;
   /** Explicit confirmation that price/share data and reported per-share figures use the same corporate-action basis. */
   basis: string;
 }
 export interface DatasetBase {
   version: "2.0"; symbol: string; name: string; currency: Currency; fiscalYearEndMonth: number;
   sources: FinancialSource[]; market: MarketSnapshot | null;
+  analysisAsOf?: string;
+  corporateActions?: { reviewedFrom: string; reviewedThrough: string; sourceId: string; events: { date: string; kind: "split" | "issuance" | "buyback" | "other" }[] };
 }
 export type CorporateDataset = DatasetBase & { industry: "corporate"; reports: CorporateReport[] };
 export type FinancialDataset = CorporateDataset

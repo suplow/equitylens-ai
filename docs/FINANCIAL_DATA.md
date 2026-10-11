@@ -50,9 +50,19 @@ Kiểm tra nhất quán nội bộ: lợi nhuận gộp = doanh thu − giá v�
 
 - Tỷ số hoạt động theo độ dài kỳ đã nhập, không tự nhân bốn. Tăng trưởng so cùng loại, quý, scope và basis năm trước.
 - Bình quân dùng kỳ có ngày kết thúc ngay trước ngày bắt đầu kỳ hiện tại, cùng scope/basis. Không thay thiếu đầu kỳ bằng số cuối kỳ.
-- Biểu đồ chỉ ghép các năm cùng scope/basis của năm mới nhất. Bảng nguồn vẫn giữ mọi kỳ để đối chiếu.
+- Biểu đồ chỉ ghép các năm cùng scope/basis của kỳ được chọn; loại kỳ có nhiều phiên bản chưa giải quyết. Không tự chọn theo thứ tự JSON.
 - `convertYtdToQuarter` lấy dòng YTD hiện tại trừ YTD quý liền trước, sau chuẩn hóa; số dư giữ cuối kỳ. Q1 bằng YTD Q1. Null lan truyền; EPS không được trừ vì mẫu số bình quân gia quyền có thể khác. Kết quả dẫn xuất giữ lineage của cả hai kỳ. UI chỉ xem chuyển đổi, không ghi đè báo cáo đầu vào.
-- Chỉ số thị trường và định giá cần năm đầy đủ; chưa dựng TTM. Ngày thị trường phải từ ngày công bố trở đi và basis phải khớp. Đây là mô hình tại cuối năm cơ sở với market snapshot tham chiếu, không tự roll-forward đến ngày giá.
+- Chỉ số thị trường dùng năm đầy đủ hoặc TTM đủ điều kiện; EPS TTM chưa hỗ trợ nên P/E TTM bị khóa. Định giá chỉ nhận năm báo cáo đầy đủ, không nhận TTM dẫn xuất. Xem [TTM](TTM.md).
+
+### Metadata và ngày trong Phase 2.1
+
+- `analysisAsOf`: ngày nghiên cứu rõ ràng; không mặc định ngày máy. Thiếu ngày này khóa tỷ số thị trường/so sánh giá, không xóa kết quả nội tại hồi cứu đủ dữ liệu.
+- `market.sharesAsOf`: ngày số cổ phiếu. DCF/relative cần đúng ngày cuối năm cơ sở mới chia giá trị vốn chủ. Thiếu/sai ngày vẫn giữ EV/equity nếu đủ đầu vào, per-share là null; P/E bị khóa khi không có cổ phiếu phù hợp.
+- `corporateActions`: `{reviewedFrom, reviewedThrough, sourceId, events:[{date,kind}]}`. Coverage chỉ là khai báo chưa xác minh; có split/issuance/buyback/other thì khóa tỷ số thị trường qua khoảng thay đổi đến khi có mô hình điều chỉnh. Không tự tính hệ số chia tách.
+- `report.restatement`: `{status: original|restated, revision, note}`. Các revision khác nhau có thể cùng ngày; không tự ưu tiên bản mới nhất. Khác `basis` không được trộn.
+- `report.openingReportId`: chọn rõ số dư trước ngày đầu kỳ khi có nhiều báo cáo cùng ngày. ID phải đúng ngày/scope/basis/lịch tài chính, không phải cơ chế bỏ qua validation. Thiếu lựa chọn khi mơ hồ khóa các tỷ số bình quân và FCFF lịch sử.
+- Legacy JSON v2 không có các trường tùy chọn vẫn đọc được, nhưng kết quả cần chúng sẽ bị khóa. Không ghi đè dữ liệu hoặc tự bổ sung ngày.
+- [Data Quality](DATA_QUALITY.md) giữ nguồn ở MOCK hoặc USER_SUPPLIED_UNVERIFIED; validation không xác minh nguồn. Các chênh lệch dòng tiền được cảnh báo, không tự sửa số dư.
 
 ### Định chế tài chính và phạm vi mã
 
