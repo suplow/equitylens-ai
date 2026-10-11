@@ -108,7 +108,7 @@ Thử nhanh: vào `/financials/FPT` → **Nạp dữ liệu MOCK** → xem công
 
 ## Các phase tiếp theo
 
-1. Mở rộng Engine: TTM, schema/mô hình định chế tài chính hoàn chỉnh, valuation tại ngày cụ thể, terminal reinvestment/ROIC, corporate actions/FX, thêm mã và bundle nghiên cứu gồm peer/assumption lineage.
+1. Mở rộng Engine: schema/mô hình định chế tài chính hoàn chỉnh, roll-forward valuation có căn cứ, terminal reinvestment/ROIC, corporate actions/FX, thêm mã và bundle nghiên cứu gồm peer/assumption lineage. TTM đã có trong Phase 2.1, EPS TTM vẫn khóa.
 2. AI tự động: có thể đánh giá Codex SDK/app-server đăng nhập ChatGPT sau khi cấu hình và kiểm thử; chưa triển khai. Theo lựa chọn hiện tại không dùng API trả phí. Luồng thủ công đã có kiểm tra schema/source IDs, nhưng kiểm chứng số liệu và nội dung citation chưa được triển khai.
 3. Phase 4: kiểm chứng nguồn dữ liệu Việt Nam và giấy phép; adapter thực, lưu trữ và lịch cập nhật khi cần.
 4. Báo cáo hoàn chỉnh và xuất PDF cần triển khai thêm sau khi có dữ liệu và quy trình trích dẫn.

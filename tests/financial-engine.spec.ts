@@ -53,8 +53,10 @@ test("a hand-calculated flat FCFF case reaches DCF, sensitivity and changes imme
   // EV 1,680m, equity 1,530m after cash 150m/debt 300m, 100,000 shares.
   await expect(scenarioRow(page, "Base").getByRole("cell").nth(1)).toHaveText("1,68");
   await expect(scenarioRow(page, "Base").getByRole("cell").nth(3)).toHaveText("15.300,00 VND");
-  await expect(scenarioRow(page, "Base").getByRole("cell").nth(4)).toHaveText("27,50%");
-  await expect(scenarioRow(page, "Base").getByRole("cell").nth(5)).toHaveText("21,57%");
+  // Fiscal-year-end value cannot be compared with the later April market price.
+  await expect(scenarioRow(page, "Base").getByRole("cell").nth(4)).toHaveText("—");
+  await expect(scenarioRow(page, "Base").getByRole("cell").nth(5)).toHaveText("—");
+  await expect(scenarioRow(page, "Base")).toContainText("ngày");
   const sensitivity = page.locator(".panel").filter({ has: page.getByRole("heading", { name: "Độ nhạy · Base", exact: true }) });
   await expect(sensitivity.getByRole("cell", { name: "15.300,00", exact: true })).toBeVisible();
   await page.getByLabel("Base · WACC", { exact: true }).fill("12");
