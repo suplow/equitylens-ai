@@ -108,6 +108,8 @@ Thử nhanh: vào `/financials/FPT` → **Nạp dữ liệu MOCK** → xem công
 
 ## Các phase tiếp theo
 
+Phase 2.1 đã bổ sung kiểm tra kỳ/ngày định giá, Data Quality và TTM. Xem [báo cáo nghiệm thu](docs/PHASE2_1_REPORT.md), [hợp đồng TTM](docs/TTM.md) và [bộ kiểm chứng độc lập](src/lib/financial/fixtures/README.md). Với snapshot khác ngày định giá, upside/MOS sẽ bị khóa; đây là guard chủ động, không phải kết quả bằng 0.
+
 1. Mở rộng Engine: schema/mô hình định chế tài chính hoàn chỉnh, roll-forward valuation có căn cứ, terminal reinvestment/ROIC, corporate actions/FX, thêm mã và bundle nghiên cứu gồm peer/assumption lineage. TTM đã có trong Phase 2.1, EPS TTM vẫn khóa.
 2. AI tự động: có thể đánh giá Codex SDK/app-server đăng nhập ChatGPT sau khi cấu hình và kiểm thử; chưa triển khai. Theo lựa chọn hiện tại không dùng API trả phí. Luồng thủ công đã có kiểm tra schema/source IDs, nhưng kiểm chứng số liệu và nội dung citation chưa được triển khai.
 3. Phase 4: kiểm chứng nguồn dữ liệu Việt Nam và giấy phép; adapter thực, lưu trữ và lịch cập nhật khi cần.
