@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "phaseId": "P3",
+    "action": "BEGIN",
+    "planHash": "970acde8cf322f64229127bfc1fcf3fa6df38cb5352b0626cb8079a025054dda",
+    "at": 1791741765897
+  }
+]

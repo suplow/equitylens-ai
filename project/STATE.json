@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "revision": 0,
+  "revision": 14,
   "planHash": "970acde8cf322f64229127bfc1fcf3fa6df38cb5352b0626cb8079a025054dda",
   "stopped": false,
   "phases": [
     {
       "id": "P3",
       "title": "AI Research Analyst",
-      "state": "PLANNED",
-      "approval": null,
-      "error": null
+      "state": "BLOCKED",
+      "approval": "970acde8cf322f64229127bfc1fcf3fa6df38cb5352b0626cb8079a025054dda",
+      "error": "Repository identity, clean Git state, branch or required inputs failed preflight"
     },
     {
       "id": "P4",
