@@ -79,7 +79,7 @@ test("source packet, manual transfer and imported report preserve evidence witho
   expect(saved.report).toEqual(report);
   expect(saved.warnings.length).toBeGreaterThan(0);
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: "qa/research-report-desktop.png", fullPage: true });
+  await page.screenshot({ path: "test-results/captures/research-report-desktop.png", fullPage: true });
   expect(outbound).toEqual([]);
   expect(errors).toEqual([]);
 });
@@ -120,7 +120,7 @@ test("bank checklist, explicit mock opt-in and empty template warning work on mo
   await expect(page.locator(".rw-checklist")).toContainText("Không áp dụng máy móc FCFF");
   await page.getByRole("checkbox", { name: /Thêm dữ liệu MOCK để luyện tập/ }).check();
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: "qa/research-prepare-mobile.png", fullPage: true });
+  await page.screenshot({ path: "test-results/captures/research-prepare-mobile.png", fullPage: true });
   const packet = await prepare(page);
   const transferRegion = page.getByRole("region", { name: "Chuyển sang ChatGPT", exact: true });
   await expect(transferRegion).toBeFocused();
@@ -132,7 +132,7 @@ test("bank checklist, explicit mock opt-in and empty template warning work on mo
   expect(packet.sources).toHaveLength(1);
   expect(packet.sources[0]).toMatchObject({ id: "M01", status: "mock" });
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: "qa/research-transfer-mobile.png", fullPage: true });
+  await page.screenshot({ path: "test-results/captures/research-transfer-mobile.png", fullPage: true });
   const report = await template(page);
   await importReport(page, report);
   await expect(page.getByText(/Bạn đang nhập bản mẫu trống/)).toBeVisible();

@@ -5,7 +5,7 @@ Orchestrator implementation is authorized separately. **Phase 3, 4 and 5 are PLA
 
 ## Prerequisite: Phase 2.1
 
-Financial validation work is not accepted or complete at this baseline. The known period-selection and valuation-date concerns must be resolved and documented in `docs/PHASE2_1_REPORT.md` before P3-1 can execute. This orchestrator does not certify Phase 2.1 by creating a roadmap.
+At the original baseline, financial validation remained unfinished. Phase 2.1 implementation and validation report are now committed and pushed at `8cd9524`; see `docs/PHASE2_1_REPORT.md` for actual tests and unresolved limitations. This does not approve Phase 3. After explicit owner approval, P3-1 must review those results and suitability for AI research inputs before further work.
 
 ## Phase 3 — AI Research Analyst
 

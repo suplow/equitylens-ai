@@ -22,12 +22,14 @@ export function gitSnapshot(root) {
   const raw = execFileSync('git', ['status', '--porcelain=v1', '-z', '--untracked-files=all'], { cwd: root, encoding: 'utf8', windowsHide: true });
   const entries = raw.split('\0').filter(Boolean); const files = [];
   for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i]; const name = entry.slice(3);
-    if (entry[0] === 'R' || entry[0] === 'C' || entry[1] === 'R' || entry[1] === 'C') i++;
-    if (exportFiles.has(name)) continue;
-    let content = 'deleted'; const path = join(root, name);
-    if (existsSync(path)) { const stat = lstatSync(path); content = stat.isFile() ? hash(readFileSync(path)) : 'non-file'; }
-    files.push({ path: name, status: entry.slice(0, 2), digest: content });
+    const entry = entries[i]; const names = [entry.slice(3)];
+    if (entry[0] === 'R' || entry[0] === 'C' || entry[1] === 'R' || entry[1] === 'C') names.push(entries[++i]);
+    for (const name of names) {
+      if (exportFiles.has(name)) continue;
+      let content = 'deleted'; const path = join(root, name);
+      if (existsSync(path)) { const stat = lstatSync(path); content = stat.isFile() ? hash(readFileSync(path)) : 'non-file'; }
+      files.push({ path: name, status: entry.slice(0, 2), digest: content });
+    }
   }
   return { branch, commit, files, fingerprint: hash({ branch, commit, files }) };
 }
@@ -164,17 +166,20 @@ export class Manager {
   async verify(id) {
     const task = this.task(id); const phase = this.phase(task.phaseId); const before = gitSnapshot(this.root);
     let tests = [];
-    const files = [...before.files.map(f => f.path), ...git(this.root, 'diff', '--name-only', task.checkpoint.before.commit, 'HEAD').split('\n').filter(Boolean)];
+    // Disable rename folding: the deleted source and added destination both need scope approval.
+    // NUL delimiters preserve whitespace/newlines and avoid Git's quoted filename display.
+    const committedPaths = execFileSync('git', ['diff', '--name-only', '--no-renames', '-z', task.checkpoint.before.commit, 'HEAD'], { cwd: this.root, encoding: 'utf8', stdio: 'pipe', windowsHide: true, timeout: 15000, maxBuffer: 2 ** 20 }).split('\0').filter(Boolean);
+    const files = [...before.files.map(f => f.path), ...committedPaths];
     const scope = this.spec(id).files;
     const scopeValid = files.every(path => scope.some(allowed => path === allowed || path.startsWith(`${allowed}/`))) && before.branch === task.branch;
-    try { if (scopeValid && this.qa) tests = await this.qa(this.spec(id).tests, this.root); } catch { tests = [{ name: 'qa-runner', code: null }]; }
+    try { if (scopeValid && !before.files.length && this.qa) tests = await this.qa(this.spec(id).tests, this.root); } catch { tests = [{ name: 'qa-runner', code: null }]; }
     const after = gitSnapshot(this.root);
     this.mutate(() => {
       task.tests = tests; task.checkpoint.after = after; task.commit = after.commit;
       const required = this.spec(id).tests;
-      const valid = scopeValid && required.every(name => tests.some(t => t.name === name && t.code === 0)) && tests.every(t => t.code === 0) && before.fingerprint === after.fingerprint && after.branch === task.branch;
+      const valid = scopeValid && !after.files.length && required.every(name => tests.some(t => t.name === name && t.code === 0)) && tests.every(t => t.code === 0) && before.fingerprint === after.fingerprint && after.branch === task.branch;
       task.state = valid ? 'READY_FOR_REVIEW' : 'FAILED'; if (phase.state !== 'PAUSED') phase.state = valid ? 'READY_FOR_REVIEW' : 'FAILED';
-      phase.error = valid ? null : 'QA failed, absent, or Git changed during verification'; this.event(task.state, id);
+      phase.error = valid ? null : before.files.length || after.files.length ? 'QA requires a clean committed worktree; commit scoped changes, then reverify' : 'QA failed, absent, or Git changed during verification'; this.event(task.state, id);
     });
   }
   async handoff(id, confirmedCommit) {

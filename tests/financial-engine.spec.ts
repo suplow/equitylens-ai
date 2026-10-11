@@ -30,15 +30,15 @@ test("JSON data reaches ratios with units, provenance, local restore and export 
   await expect(ratio(page, "ROE").locator(".fe-ratio-value")).toHaveText("20,11%");
   await page.getByRole("button", { name: "Lưu chuyển tiền tệ", exact: true }).click();
   await expect(page.getByRole("row").filter({ hasText: "FCF đơn giản = CFO − CAPEX" })).toContainText("0,14");
-  await mkdir("qa", { recursive: true });
-  await page.screenshot({ path: "qa/phase2-financials-desktop.png", fullPage: true });
+  await mkdir("test-results/captures", { recursive: true });
+  await page.screenshot({ path: "test-results/captures/phase2-financials-desktop.png", fullPage: true });
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 900 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
   await page.setViewportSize({ width: 390, height: 900 });
   await ratio(page, "ROE").scrollIntoViewIfNeeded();
-  await page.screenshot({ path: "qa/phase2-ratios-mobile.png" });
+  await page.screenshot({ path: "test-results/captures/phase2-ratios-mobile.png" });
   expect(errors).toEqual([]);
 });
 
@@ -70,14 +70,14 @@ test("a hand-calculated flat FCFF case reaches DCF, sensitivity and changes imme
   await expect(scenarioRow(page, "Base").getByRole("cell").nth(3)).toHaveText("—");
   await expect(scenarioRow(page, "Base")).toContainText("g<WACC");
   await page.getByLabel("Base · Tăng trưởng dài hạn", { exact: true }).fill("0");
-  await mkdir("qa", { recursive: true });
-  await page.screenshot({ path: "qa/phase2-valuation-desktop.png", fullPage: true });
+  await mkdir("test-results/captures", { recursive: true });
+  await page.screenshot({ path: "test-results/captures/phase2-valuation-desktop.png", fullPage: true });
   await scenarioRow(page, "Base").scrollIntoViewIfNeeded();
-  await page.screenshot({ path: "qa/phase2-dcf-results.png" });
+  await page.screenshot({ path: "test-results/captures/phase2-dcf-results.png" });
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    if (width === 390) await page.screenshot({ path: "qa/phase2-valuation-mobile.png", fullPage: true });
+    if (width === 390) await page.screenshot({ path: "test-results/captures/phase2-valuation-mobile.png", fullPage: true });
   }
 });
 

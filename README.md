@@ -19,7 +19,7 @@ Dashboard nghiên cứu cổ phiếu Việt Nam, chạy cục bộ với Next.js
 
 ## Project Manager local (orchestrator)
 
-Bộ điều phối riêng chạy bằng `npm run orchestrator`, mở `http://127.0.0.1:4310`. Phase 3–5 đang **PLANNED**, chưa được phê duyệt hoặc khởi động. Mặc định bàn giao worker thủ công; Codex CLI là adapter opt-in thử nghiệm. Xem [hướng dẫn Windows, vận hành và recovery](tools/orchestrator/README.md), [roadmap](project/ROADMAP.md) và [báo cáo kiểm thử](docs/ORCHESTRATOR_REPORT.md). Phase 2.1 chưa hoàn thành tại baseline này; orchestrator không thay thế việc kiểm chứng Financial Engine.
+Bộ điều phối riêng chạy bằng `npm run orchestrator`, mở `http://127.0.0.1:4310`. Phase 3–5 đang **PLANNED**, chưa được phê duyệt hoặc khởi động. Mặc định bàn giao worker thủ công; Codex CLI là adapter opt-in thử nghiệm. Xem [hướng dẫn Windows, vận hành và recovery](tools/orchestrator/README.md), [roadmap](project/ROADMAP.md) và [báo cáo kiểm thử](docs/ORCHESTRATOR_REPORT.md). Phase 2.1 đã có báo cáo kiểm chứng tại commit `8cd9524`; kết quả đó không tự phê duyệt Phase 3. Trên máy dùng Chrome, đặt `$env:PLAYWRIGHT_CHANNEL='chrome'` trước khi chạy orchestrator để QA dùng đúng trình duyệt. Worktree có thay đổi chưa commit sẽ bị chặn; không tự xóa dữ liệu để làm sạch Git.
 
 ## Chạy ứng dụng tài chính trên máy
 

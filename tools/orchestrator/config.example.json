@@ -4,6 +4,7 @@
   "bind": "127.0.0.1",
   "port": 4310,
   "defaultWorker": "manual",
+  "qaEnvironmentExample": { "PLAYWRIGHT_CHANNEL": "chrome" },
   "experimentalOptIn": "npm run orchestrator -- --codex=C:/absolute/path/to/codex.exe",
   "maxWritersPerWorktree": 1,
   "quotaMinimumCooldownMinutes": 60,

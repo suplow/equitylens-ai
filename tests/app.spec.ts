@@ -17,8 +17,8 @@ test("dashboard renders mock provenance without runtime errors", async ({
     page.getByText("DỮ LIỆU MINH HỌA", { exact: true }),
   ).toBeVisible();
   await expect(page.locator(".recharts-area-curve")).toBeVisible();
-  await mkdir("qa", { recursive: true });
-  await page.screenshot({ path: "qa/dashboard-desktop.png", fullPage: true });
+  await mkdir("test-results/captures", { recursive: true });
+  await page.screenshot({ path: "test-results/captures/dashboard-desktop.png", fullPage: true });
   expect(errors).toEqual([]);
 });
 test("search resolves a stock and chart ranges change", async ({ page }) => {
@@ -32,7 +32,7 @@ test("search resolves a stock and chart ranges change", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText("VNM");
   await page.getByRole("button", { name: "1T", exact: true }).click();
   await expect(page.getByRole("img", { name: /30 ngày/ })).toBeVisible();
-  await page.screenshot({ path: "qa/stock-desktop.png", fullPage: true });
+  await page.screenshot({ path: "test-results/captures/stock-desktop.png", fullPage: true });
 });
 test("watchlist changes survive reload and handles an empty list", async ({
   page,
@@ -89,7 +89,7 @@ test("all destinations retain symbol and incomplete features are honest", async 
       exact: true,
     }),
   ).toBeVisible();
-  await page.screenshot({ path: "qa/financials-desktop.png", fullPage: true });
+  await page.screenshot({ path: "test-results/captures/financials-desktop.png", fullPage: true });
   await page
     .locator(".sidebar")
     .getByRole("link", { name: "Định giá", exact: true })
@@ -159,7 +159,7 @@ test("responsive layouts and mobile menu", async ({ page }) => {
     ).toBe(true);
     if (width === 390) {
       await page.screenshot({
-        path: "qa/dashboard-mobile.png",
+        path: "test-results/captures/dashboard-mobile.png",
         fullPage: true,
       });
       await page.getByRole("button", { name: "Mở menu", exact: true }).click();
@@ -170,7 +170,7 @@ test("responsive layouts and mobile menu", async ({ page }) => {
       await expect(page.getByRole("heading", { level: 1 })).toContainText(
         "FPT",
       );
-      await page.screenshot({ path: "qa/stock-mobile.png", fullPage: true });
+      await page.screenshot({ path: "test-results/captures/stock-mobile.png", fullPage: true });
     }
   }
 });

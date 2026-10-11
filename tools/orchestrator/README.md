@@ -6,12 +6,17 @@ Requirements: existing EquityLens checkout, Git, Node **24+** with `node:sqlite`
 
 ```powershell
 cd "C:\Users\khoa\Documents\Codex\2026-10-09\h-y\outputs\equitylens-ai"
+$env:PLAYWRIGHT_CHANNEL = 'chrome' # installed Chrome for the QA E2E gate
 npm run orchestrator
 ```
 
 Open **http://127.0.0.1:4310**. The dashboard is separate from the financial app at port 3000. Alternative port: `npm run orchestrator -- --port=4311`. Bind is fixed to loopback; do not expose it via a proxy/tunnel or LAN.
 
-Default is **manual worker mode**. Starting this server never approves or starts a phase. The roadmap includes a required Phase 2.1 report: its absence blocks P3-1. Phase 2.1 remains unfinished at the implementation baseline.
+Default is **manual worker mode**. Starting this server never approves or starts a phase. The roadmap includes a required Phase 2.1 report: its absence blocks P3-1. Phase 2.1 code and report have now been pushed (`8cd9524`); P3-1 must still audit its limitations, after owner approval of Phase 3.
+
+The worktree must be clean before dispatch. Existing local changes (including old `qa/` images) are preserved and block preflight; review and commit them separately or prepare a clean dedicated worktree. Never reset user files merely to unblock the scheduler. New E2E diagnostic captures go under ignored `test-results/captures/`, so running QA does not rewrite tracked evidence. QA passes only on a clean committed tree that remains unchanged. If it fails for uncommitted work, commit scoped changes and use **Run QA again**.
+
+QA forwards only the selected `PLAYWRIGHT_CHANNEL` (`chrome`, `chromium`, or `msedge`) in addition to allowlisted OS environment settings. Omit it to use Playwright's installed default Chromium. Provider credentials are not inherited. Browser test reports/captures are local artifacts, not evidence that a model run succeeded.
 
 1. Read `project/ROADMAP.md` and each task's scope/acceptance/tests in the dashboard.
 2. The **project owner** clicks Approve phase and types `APPROVE P3`. Approval is recorded against the current plan hash; it does not launch work.
@@ -37,7 +42,9 @@ npm run orchestrator -- --codex=C:/absolute/path/to/codex.exe
 
 This checks `codex login status` for ChatGPT authentication and rejects an API-key login, uncertain authentication, non-native Windows shim or missing executable. It passes no API key/provider override, ignores user config, uses workspace-write and never bypasses sandbox or approvals. Access and quotas depend on the user's existing plan; no promise of unlimited/free model usage is made.
 
-**Manual mode is the validated operating mode. The CLI adapter is experimental:** no real generation, real quota exhaustion, malicious-worker isolation or all-descendant termination has been demonstrated. The installed third-party Auto Resume is a separate recovery system; do not enable it on these worker sessions. Establish one recovery owner before using CLI mode. The adapter does not modify that utility's global settings.
+**Manual mode is the validated operating mode. The CLI adapter is experimental:** simulated JSONL/process tests cover completion, explicit quota code, contradictory terminal events, truncated output, identity and authentication/environment filtering. No real generation, real quota exhaustion, malicious-worker isolation or all-descendant termination has been demonstrated. The installed third-party Auto Resume is a separate recovery system; do not enable it on these worker sessions. Establish one recovery owner before using CLI mode. The adapter does not modify that utility's global settings.
+
+Official interface research was rechecked on 2026-10-11: [`codex exec`](https://learn.chatgpt.com/docs/non-interactive-mode) provides JSONL and saved CLI authentication; [SDK/app-server](https://developers.openai.com/blog/codex-as-a-platform) serve richer programmatic/session integrations. This small coordinator retains bounded CLI jobs and manual fallback rather than adding a second conversation runtime. Local CLI `0.162.0-alpha.2` exposes the required flags. Unknown provider error formats stay UNKNOWN; documentation does not establish a reliable quota-reset timer for this adapter.
 
 Approval gates protect the normal control path, not against malicious code running as the same Windows user. SQLite is in Git metadata (normally protected by Codex workspace sandbox), but unrestricted same-user programs and QA scripts can alter files or call localhost. Scope checking is detection, not a sandbox. QA runs repository scripts with local permissions. For untrusted tasks use manual review or add OS-level isolated workers and QA before autonomous use.
 
