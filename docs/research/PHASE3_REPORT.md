@@ -41,3 +41,13 @@ Prompt-injection regression checks packaging and application behavior, not guara
 5. Import the resulting JSON. E01 ratio claims need raw fractional values and exact units; check prose and underlying documents manually even when validation succeeds.
 
 Local financial data, runtime projections, SQLite and Git history were preserved. No deployment, paid service, force push or merge.
+
+## Evidence and valuation binding increment (2026-10-12)
+
+Added optional structured `quotes` and `valuationClaims` to imported claims. Quotes must match an exact substring of the cited D01–D08/M01 source. Invented quotes, unknown/uncited sources and using document quotes to impersonate Engine evidence are rejected. Legacy reports without quotes remain importable with an explicit missing-evidence warning, rather than silently being considered verified.
+
+Valuation references bind to Bear/Base/Bull, an allowlisted output field, its exact raw number, currency/unit and `provenance.valuationAsOf`. Wrong currency, dates, values and null/locked outputs are rejected; null upside cannot become zero. E01 references may contain either ratio or valuation evidence. Prompt and UI expose the rules and distinguish literal matching from semantic/factual verification.
+
+Verification: 293 unit tests passed; typecheck, lint and build passed. Full Chrome E2E: 20 passed (45 seconds). The existing XSS/browser workflow was extended to render an exact quote as text and reject an invented replacement; this extension was rerun separately after the full suite. These are deterministic application tests, not live LLM-evaluation results.
+
+This supersedes the earlier limitation that only ratio fields are bound on import. Source authenticity, whether a quotation supports a claim, uncited numbers embedded in free prose, and live-model adversarial evaluation remain unresolved. Do not claim complete Phase 3 acceptance from matching numeric fields or substrings alone.

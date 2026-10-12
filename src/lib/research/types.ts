@@ -37,6 +37,8 @@ export interface ResearchOptions {
   includeMock?: boolean;
 }
 export interface ResearchClaim {
+  quotes?: { sourceId: string; text: string }[];
+  valuationClaims?: { scenario: "Bear" | "Base" | "Bull"; field: "enterpriseValue" | "equityValue" | "intrinsicValuePerShare" | "upside" | "marginOfSafety"; value: number; unit: string; valuationAsOf: string }[];
   financialClaims?: { metricId: string; value: number; unit: string }[];
   text: string;
   category: "source_fact" | "interpretation" | "assumption" | "missing_data";

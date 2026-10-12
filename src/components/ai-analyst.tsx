@@ -100,6 +100,8 @@ function ReviewResult({ result, packet }: { result: ImportResult; packet: Resear
       {section.claims.map((claim, index) => <article className="rw-claim" key={index}>
         <span className="rw-claim-kind">{claimLabels[claim.category]}</span><p>{claim.text}</p>
         {claim.financialClaims?.map((metric, i) => <p className="rw-help" key={i}>Đối chiếu E01: {metric.metricId} = {metric.value} ({metric.unit}; percent dùng phân số). Khớp số cấu trúc không xác minh câu diễn giải.</p>)}
+        {claim.valuationClaims?.map((value, i) => <p className="rw-help" key={i}>Đối chiếu định giá: {value.scenario} · {value.field} = {value.value} {value.unit} · ngày {value.valuationAsOf}. Kết quả có điều kiện, không phải dự báo chắc chắn.</p>)}
+        {claim.quotes?.map((quote, i) => <blockquote key={i}>{quote.text}<footer>{quote.sourceId} · Khớp trích đoạn đã nhập, chưa xác minh tài liệu hoặc suy luận.</footer></blockquote>)}
         {claim.sourceIds.length > 0 && <div className="rw-citations">{claim.sourceIds.map((id) => {
           const source = packet.sources.find((item) => item.id === id);
           return <details key={id}><summary><FileText size={12} aria-hidden="true" />{id}</summary><p><strong>{source?.title}</strong><br />{source?.publishedAt || "Chưa rõ ngày công bố"} · {source?.period}<br />{source?.locator}</p><blockquote>{source?.content}</blockquote></details>;

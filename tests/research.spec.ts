@@ -78,6 +78,13 @@ test("source packet, manual transfer and imported report preserve evidence witho
   expect(saved.packet).toEqual(packet);
   expect(saved.report).toEqual(report);
   expect(saved.warnings.length).toBeGreaterThan(0);
+  report.sections[0].claims[0].quotes = [{ sourceId: "D01", text: excerpt }];
+  await importReport(page, report);
+  await expect(page.locator(".rw-claim > blockquote")).toContainText(excerpt);
+  expect(await page.evaluate(() => "testInjection" in window)).toBe(false);
+  report.sections[0].claims[0].quotes[0].text = "Trích đoạn tự bịa không có trong tài liệu.";
+  await importReport(page, report);
+  await expect(page.getByText(/Trích đoạn D01 không khớp nguyên văn/)).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: "test-results/captures/research-report-desktop.png", fullPage: true });
   expect(outbound).toEqual([]);
