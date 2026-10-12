@@ -2,9 +2,15 @@
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EquityLens · Project Manager</title><link rel="stylesheet" href="/dashboard.css"><script src="/dashboard.js" defer></script></head>
 <body><header><span class="brand">EQUITYLENS <b>AI</b></span><span>PROJECT CONTROL · LOCAL</span></header><main>
 <h1>Project Manager</h1><p>Phê duyệt phạm vi, theo dõi kiểm thử và tiếp tục công việc có kiểm soát.</p>
-<aside>Phase 3–5 chưa được phê duyệt. Thao tác Approve và Accept dành cho chủ dự án. Stop/Pause ngăn công việc mới; worker đang chạy được chờ kết thúc.</aside>
+<aside>Trạng thái phê duyệt hiển thị ở từng Phase. Chế độ tự động cần phê duyệt tổng thể riêng. Stop/Pause ngăn công việc mới; worker đang chạy được chờ kết thúc. Chạy live-smoke thành công trên máy này trước khi bật tự động; cấu hình worker không đồng nghĩa đã kiểm chứng vận hành.</aside>
 <p id="message" role="status" aria-live="polite"></p><section class="summary" id="summary"></section>
 <div class="toolbar"><button id="refresh">Làm mới</button><button id="stop" class="danger">Stop — ngừng nhận task</button></div>
+<h2>Chế độ tự động Phase 3–5</h2>
+<p>Đọc phạm vi và kiểm thử của từng task bên dưới. Phê duyệt gộp cho phép tự thực hiện, review bằng phiên Codex riêng, sửa lỗi trong giới hạn retry và chuyển Phase sau QA/review. Cho phép tiếp tục hàng đợi an toàn sau restart và retry quota sau ít nhất một giờ. Không cho phép chi tiền, deploy, giao dịch hoặc thao tác phá hủy.</p>
+<p id="program-status"></p>
+<label for="program-confirmation">Nhập chuỗi xác nhận hiển thị bên dưới để duyệt kế hoạch cụ thể:</label>
+<pre id="program-phrase"></pre><input id="program-confirmation" autocomplete="off" aria-label="Xác nhận kế hoạch tổng thể">
+<button id="approve-program">Phê duyệt và chạy kế hoạch tổng thể</button><button id="resume-program">Resume chương trình đã duyệt</button>
 <h2>Phases & approvals</h2><section id="phases" class="phases"></section>
 <h2>Task queue</h2><section id="tasks"></section>
 <h2>Git & checkpoint</h2><pre id="checkpoint"></pre>

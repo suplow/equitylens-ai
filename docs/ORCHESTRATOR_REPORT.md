@@ -81,3 +81,7 @@ A separate read-only reviewer inspected locks, approval/recovery, CLI authentica
 ## Handoff
 
 Use `npm run orchestrator` and open http://127.0.0.1:4310. The owner must approve each phase and accept its final outcome separately. Review limits above before opting into CLI workers. Source implementation and report are committed separately so the report can identify a stable implementation SHA.
+
+## Automatic program extension (2026-10-12)
+
+See [automation guide and actual verification](ORCHESTRATOR_AUTOMATION.md). Simulation and UI coverage added; real Codex smoke task was blocked by native execution policy and failed acceptance. Autonomous operation on this machine is NOT yet verified. Existing approvals and SQLite were preserved; no real Phase 3-5 worker launched.

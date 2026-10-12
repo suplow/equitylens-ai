@@ -26,6 +26,7 @@ export const Plan = z.object({
   }
 });
 export const Snapshot = z.object({
+  program: z.object({ planHash: z.string(), enabled: z.boolean(), approvedAt: z.number(), baseline: z.string(), error: z.string().nullable(), manualHandoffArchive: z.array(z.unknown()).optional() }).optional(),
   version: z.literal(1), planHash: z.string(), identity: z.object({ root: z.string(), gitDir: z.string(), remote: z.string() }),
   stopped: z.boolean(), revision: z.number().int().nonnegative(),
   phases: z.array(z.object({ id, title: z.string(), state: z.enum(states), approval: z.string().nullable(), error: z.string().nullable() })),

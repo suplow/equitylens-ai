@@ -4,13 +4,14 @@ import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { codexWorker, qaRunner, workerEnv } from './worker.mjs';
 
-async function run(events, code = 0, suffix = '') {
+async function run(events, code = 0, suffix = '', review = false) {
   const child = new EventEmitter();
   child.stdin = new PassThrough(); child.stdout = new PassThrough(); child.stderr = new PassThrough(); child.pid = 123;
   const worker = codexWorker(process.execPath, {
+    review,
     authenticate: () => ({ status: 0, stdout: '', stderr: 'Logged in using ChatGPT' }),
     launch: (_file, args, options) => {
-      assert.ok(args.includes('--json')); assert.ok(args.includes('workspace-write'));
+      assert.ok(args.includes('--json')); assert.ok(args.includes(review ? 'read-only' : 'workspace-write'));
       assert.equal(options.shell, false); assert.equal(options.windowsHide, true);
       return child;
     },
@@ -21,6 +22,12 @@ async function run(events, code = 0, suffix = '') {
   return promise;
 }
 const started = { type: 'thread.started', thread_id: 'simulation-1' };
+test('independent reviewer uses read-only sandbox and returns a structured verdict', async () => {
+  const result = await run([started, { type: 'item.completed', item: { type: 'agent_message', text: '{"approved":false,"note":"missing evidence"}' } }, { type: 'turn.completed' }], 0, '', true);
+  assert.deepEqual(result.verdict, { approved: false, note: 'missing evidence' });
+  const invalid = await run([started, { type: 'item.completed', item: { type: 'agent_message', text: 'looks good' } }, { type: 'turn.completed' }], 0, '', true);
+  assert.equal(invalid.verdict, null);
+});
 test('worker confirms a complete observed run and recognizes an explicit quota code', async () => {
   assert.equal((await run([started, { type: 'turn.completed' }])).outcome, 'completed');
   assert.equal((await run([started, { type: 'turn.failed', error: { code: 'quota_exceeded' } }], 1)).outcome, 'quota');

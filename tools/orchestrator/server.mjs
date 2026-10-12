@@ -3,7 +3,7 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Manager } from './core.mjs';
+import { AutomaticManager } from './automatic.mjs';
 import { codexWorker, qaRunner } from './worker.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -40,6 +40,8 @@ export function createDashboard(manager, { port = 4310 } = {}) {
       const { action, id, confirmation } = input;
       if (['approve', 'accept', 'reconcile'].includes(action) && confirmation !== `${action.toUpperCase()} ${id}`) throw Error('Explicit owner confirmation required');
       switch (action) {
+        case 'approveProgram': manager.approveProgram(confirmation); break;
+        case 'resumeProgram': manager.resumeProgram(); break;
         case 'approve': manager.approve(id); break;
         case 'start': manager.start(id); break;
         case 'pause': manager.pause(id); break;
@@ -67,7 +69,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const executable = args.find(a => a.startsWith('--codex='))?.slice(8);
   const port = Number(args.find(a => a.startsWith('--port='))?.slice(7) || 4310);
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw Error('Invalid port');
-  const manager = new Manager(root, plan, { worker: executable ? codexWorker(executable) : null, qa: qaRunner });
+  const manager = new AutomaticManager(root, plan, { worker: executable ? codexWorker(executable) : null, reviewer: executable ? codexWorker(executable, { review: true }) : null, qa: qaRunner });
   const dashboard = createDashboard(manager, { port }); await dashboard.listen(); manager.export();
   console.log(`EquityLens Project Manager: http://127.0.0.1:${port} (${executable ? 'Codex opt-in' : 'manual fallback'})`);
   console.log('No phase starts without owner approval. Stop drains active work; never kills unrelated processes.');

@@ -4,7 +4,8 @@ const el = id => document.getElementById(id);
 function node(tag, text, cls) { const n = document.createElement(tag); if (text) n.textContent = text; if (cls) n.className = cls; return n; }
 function button(parent, label, action, id, enabled = true) { const b = node('button', label); b.disabled = !enabled; b.onclick = () => act(action, id); parent.append(b); }
 async function act(action, id) {
-  const data = { action, id, revision: state.revision };
+  const data = { action: state.program && action === 'resume' ? 'resumeProgram' : action, id, revision: state.revision };
+  if (action === 'approveProgram') data.confirmation = el('program-confirmation').value;
   if (['approve', 'accept', 'reconcile'].includes(action)) {
     const expected = `${action.toUpperCase()} ${id}`;
     data.confirmation = prompt(`Bạn là chủ dự án. Đọc phạm vi/kiểm thử trước khi xác nhận. Nhập ${expected}`);
@@ -26,6 +27,10 @@ async function refresh() {
   try {
     const response = await fetch('/api/state'); if (!response.ok) throw Error('Phiên điều khiển hết hạn; tải lại trang.'); state = await response.json();
     const accepted = state.tasks.filter(t => t.state === 'ACCEPTED').length;
+    el('program-phrase').textContent = `APPROVE PROGRAM ${state.planHash}`;
+    el('program-status').textContent = state.program ? `${state.program.enabled ? 'Đang bật' : 'Đã dừng'} · ${state.program.error || 'Kế hoạch đã phê duyệt'}` : 'Chưa phê duyệt kế hoạch tổng thể';
+    el('approve-program').disabled = !state.canApproveProgram || state.adapter === 'manual';
+    el('resume-program').disabled = !state.program || state.program.enabled || state.busy;
     el('summary').replaceChildren();
     for (const [label, value] of [['Tiến độ task', `${accepted}/${state.tasks.length} đã review`], ['Worker', state.busy ? 'Đang chạy / QA' : `${state.adapter} · idle`], ['Scheduler', state.stopped ? 'Đã dừng' : 'Chờ task được phép']]) {
       const c = node('article', '', 'card'); c.append(node('span', label, 'label'), node('strong', value)); el('summary').append(c);
@@ -57,3 +62,5 @@ async function refresh() {
   } catch (error) { el('message').textContent = error.message; }
 }
 el('refresh').onclick = refresh; el('stop').onclick = () => act('stop'); refresh(); setInterval(refresh, 10000);
+el('approve-program').onclick = () => act('approveProgram');
+el('resume-program').onclick = () => act('resumeProgram');

@@ -145,8 +145,8 @@ export class Manager {
       p.state = 'RUNNING'; this.state.stopped = false; this.event('STARTED', id);
     });
   }
-  pause(id) { this.mutate(() => { const p = this.phase(id); if (!['RUNNING', 'VERIFYING'].includes(p.state)) throw Error('Phase is not running'); p.state = 'PAUSED'; this.event('PAUSED', id); }); }
-  stop() { this.mutate(() => { this.state.stopped = true; for (const p of this.state.phases) if (['RUNNING', 'VERIFYING'].includes(p.state)) p.state = 'PAUSED'; this.event('STOPPED_NO_NEW_WORK'); }); }
+  pause(id) { this.mutate(() => { const p = this.phase(id); if (!['RUNNING', 'VERIFYING'].includes(p.state)) throw Error('Phase is not running'); p.state = 'PAUSED'; if (this.state.program) this.state.program.enabled = false; this.event('PAUSED', id); }); }
+  stop() { this.mutate(() => { this.state.stopped = true; if (this.state.program) this.state.program.enabled = false; for (const p of this.state.phases) if (['RUNNING', 'VERIFYING'].includes(p.state)) p.state = 'PAUSED'; this.event('STOPPED_NO_NEW_WORK'); }); }
   resume(id) {
     this.mutate(() => {
       const p = this.phase(id); const tasks = this.state.tasks.filter(t => t.phaseId === id);
@@ -175,14 +175,14 @@ export class Manager {
       }
       this.mutate(() => {
         task.state = this.worker ? 'RUNNING' : 'BLOCKED'; task.attempts++; task.workerRunId = randomUUID(); task.branch = before.branch; task.commit = before.commit;
-        task.checkpoint = { before, after: null, at: this.clock() }; task.tests = []; task.review = null;
+        task.checkpoint = { origin: task.checkpoint?.origin || before, repairContext: task.checkpoint?.repairContext || null, before, after: null, at: this.clock() }; task.tests = []; task.review = null;
         if (!this.worker) { phase.state = 'BLOCKED'; phase.error = 'Manual worker: perform task in the approved scope, then submit handoff'; }
         this.event(this.worker ? 'DISPATCHED' : 'MANUAL_HANDOFF', task.id);
       });
       if (!this.worker) return;
       let result;
       try {
-        result = await this.worker(spec, { root: this.root, runId: task.workerRunId, onPid: pid => this.mutate(() => { task.workerPid = pid; }), onRunId: id => this.mutate(() => { task.workerRunId = id; }) });
+        result = await this.worker({ ...spec, repairContext: task.checkpoint.repairContext }, { root: this.root, runId: task.workerRunId, onPid: pid => this.mutate(() => { task.workerPid = pid; }), onRunId: id => this.mutate(() => { task.workerRunId = id; }) });
       } catch { result = { outcome: 'unknown' }; }
       this.mutate(() => {
         if (result.outcome !== 'unknown') task.workerPid = null;
@@ -205,14 +205,14 @@ export class Manager {
     let tests = [];
     // Disable rename folding: the deleted source and added destination both need scope approval.
     // NUL delimiters preserve whitespace/newlines and avoid Git's quoted filename display.
-    const committedPaths = execFileSync('git', ['diff', '--name-only', '--no-renames', '-z', task.checkpoint.before.commit, 'HEAD'], { cwd: this.root, encoding: 'utf8', stdio: 'pipe', windowsHide: true, timeout: 15000, maxBuffer: 2 ** 20 }).split('\0').filter(Boolean);
+    const committedPaths = execFileSync('git', ['diff', '--name-only', '--no-renames', '-z', task.checkpoint.origin?.commit || task.checkpoint.before.commit, 'HEAD'], { cwd: this.root, encoding: 'utf8', stdio: 'pipe', windowsHide: true, timeout: 15000, maxBuffer: 2 ** 20 }).split('\0').filter(Boolean);
     const files = [...before.files.map(f => f.path), ...committedPaths.filter(path => !exportFiles.has(path))];
     const scope = this.spec(id).files;
     const scopeValid = files.every(path => scope.some(allowed => path === allowed || path.startsWith(`${allowed}/`))) && before.branch === task.branch;
     try { if (scopeValid && !before.files.length && this.qa) tests = await this.qa(this.spec(id).tests, this.root); } catch { tests = [{ name: 'qa-runner', code: null }]; }
     const after = gitSnapshot(this.root);
     this.mutate(() => {
-      task.tests = tests; task.checkpoint.after = after; task.commit = after.commit;
+      task.tests = tests; task.checkpoint.after = after; task.checkpoint.scopeValid = scopeValid; task.commit = after.commit;
       const required = this.spec(id).tests;
       const valid = scopeValid && !after.files.length && required.every(name => tests.some(t => t.name === name && t.code === 0)) && tests.every(t => t.code === 0) && before.fingerprint === after.fingerprint && after.branch === task.branch;
       task.state = valid ? 'READY_FOR_REVIEW' : 'FAILED'; if (phase.state !== 'PAUSED') phase.state = valid ? 'READY_FOR_REVIEW' : 'FAILED';

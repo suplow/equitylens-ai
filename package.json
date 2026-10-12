@@ -12,7 +12,7 @@
     "test:e2e": "playwright test",
     "orchestrator": "node tools/orchestrator/server.mjs",
     "test:orchestrator": "node --test tools/orchestrator/*.test.mjs",
-    "test:orchestrator:browser": "node tools/orchestrator/browser-check.mjs"
+    "test:orchestrator:browser": "node tools/orchestrator/browser-check.mjs && node tools/orchestrator/automatic-browser-check.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.4.0",
