@@ -1,3 +1,4 @@
+import type { FinancialEvidence, FinancialEvidenceInput } from "./financial-evidence";
 export const REPORT_SECTIONS = [
   "Executive Summary", "Business Overview", "Financial Performance", "Valuation",
   "Investment Thesis", "Key Risks", "Bull / Bear Case",
@@ -13,9 +14,10 @@ export interface EvidenceInput {
 }
 export interface ResearchSource extends EvidenceInput {
   id: string;
-  status: "provided_unverified" | "mock";
+  status: "provided_unverified" | "mock" | "calculated_unverified";
 }
 export interface ResearchPacket {
+  financialEvidence?: FinancialEvidence;
   version: "1.0";
   id: string;
   symbol: string;
@@ -29,11 +31,13 @@ export interface ResearchPacket {
   checklist: string[];
 }
 export interface ResearchOptions {
+  financial?: FinancialEvidenceInput;
   sources?: EvidenceInput[];
   assumptions?: string;
   includeMock?: boolean;
 }
 export interface ResearchClaim {
+  financialClaims?: { metricId: string; value: number; unit: string }[];
   text: string;
   category: "source_fact" | "interpretation" | "assumption" | "missing_data";
   sourceIds: string[];

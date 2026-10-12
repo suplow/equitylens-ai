@@ -8,6 +8,7 @@ import { buildChatGPTPrompt, createResearchPacket, getResearchChecklist, getResp
 import { Button } from "./ui/button";
 import { Panel } from "./shared";
 import "./research-workbench.css";
+import { useFinancialDataset } from "@/hooks/use-financial-dataset";
 
 const emptyEvidence: EvidenceInput = { title: "", url: "", publishedAt: "", period: "", locator: "", content: "" };
 const claimLabels: Record<ResearchClaim["category"], string> = {
@@ -98,6 +99,7 @@ function ReviewResult({ result, packet }: { result: ImportResult; packet: Resear
       <h3>{section.title}</h3>
       {section.claims.map((claim, index) => <article className="rw-claim" key={index}>
         <span className="rw-claim-kind">{claimLabels[claim.category]}</span><p>{claim.text}</p>
+        {claim.financialClaims?.map((metric, i) => <p className="rw-help" key={i}>Đối chiếu E01: {metric.metricId} = {metric.value} ({metric.unit}; percent dùng phân số). Khớp số cấu trúc không xác minh câu diễn giải.</p>)}
         {claim.sourceIds.length > 0 && <div className="rw-citations">{claim.sourceIds.map((id) => {
           const source = packet.sources.find((item) => item.id === id);
           return <details key={id}><summary><FileText size={12} aria-hidden="true" />{id}</summary><p><strong>{source?.title}</strong><br />{source?.publishedAt || "Chưa rõ ngày công bố"} · {source?.period}<br />{source?.locator}</p><blockquote>{source?.content}</blockquote></details>;
@@ -109,6 +111,10 @@ function ReviewResult({ result, packet }: { result: ImportResult; packet: Resear
 }
 
 function ResearchWorkbench({ stock }: { stock: Stock }) {
+  const financial = useFinancialDataset(stock.symbol, stock.sector === "Ngân hàng" ? "bank" : "corporate");
+  const [attachFinancial, setAttachFinancial] = useState(false);
+  const [reportId, setReportId] = useState("");
+  const [scenariosJson, setScenariosJson] = useState("");
   const [question, setQuestion] = useState(`Cần những bằng chứng nào để đánh giá chất lượng lợi nhuận và rủi ro của ${stock.symbol}?`);
   const [assumptions, setAssumptions] = useState("");
   const [sources, setSources] = useState<EvidenceInput[]>([]);
@@ -145,7 +151,8 @@ function ResearchWorkbench({ stock }: { stock: Stock }) {
   }
   function preparePacket() {
     try {
-      const next = createResearchPacket(stock, question, { sources, assumptions, includeMock });
+      if (attachFinancial && !financial.dataset) throw Error("Nạp bộ dữ liệu đã lưu ở Financial Analysis trước khi đính kèm.");
+      const next = createResearchPacket(stock, question, { sources, assumptions, includeMock, ...(attachFinancial ? { financial: { datasetJson: financial.raw, reportId, scenariosJson } } : {}) });
       setPacket(next); setResult(null); setRawReport(""); setError(""); setFeedback("Đã tạo hồ sơ. Xem nội dung trước khi chuyển sang ChatGPT."); setStep(1);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Không thể tạo hồ sơ."); }
   }
@@ -167,16 +174,30 @@ function ResearchWorkbench({ stock }: { stock: Stock }) {
         {sources.length === 0 ? <p className="rw-empty">Chưa có tài liệu. Thêm báo cáo tài chính, thuyết minh hoặc công bố doanh nghiệp để bắt đầu nghiên cứu có dẫn nguồn.</p> : <ul className="rw-evidence-list">{sources.map((source, index) => <li key={index}><FileText size={16} aria-hidden="true" /><div><strong>{source.title}</strong><p>{source.publishedAt || "Chưa rõ ngày công bố"} · {source.period} · Chưa xác minh</p></div><Button variant="ghost" size="icon" aria-label={`Xóa tài liệu ${source.title}`} onClick={() => { setSources(sources.filter((_, i) => i !== index)); invalidate(); }}><Trash2 size={15} aria-hidden="true" /></Button></li>)}</ul>}
         <EvidenceEditor onAdd={addEvidence} onChange={(pending) => { setPendingSource(pending); invalidate(); }} disabled={sources.length >= 8} />
         {pendingSource && <p className="rw-warning" role="status">Bạn đang nhập tài liệu. Bấm “Thêm vào hồ sơ” hoặc “Xóa bản nháp tài liệu” trước khi tạo hồ sơ.</p>}
+        <details className="rw-evidence-editor"><summary>Đính kèm Financial Engine</summary>
+          <p className="rw-help">Lưu bộ JSON ở Financial Analysis rồi nạp tại đây. Kết quả được tính lại từ dữ liệu đã kiểm tra; nguồn vẫn chưa xác minh. Không tự gửi lên ChatGPT.</p>
+          <Button variant="outline" onClick={() => { invalidate(); financial.load(); setReportId(""); }}>Nạp dữ liệu tài chính đã lưu</Button>
+          {financial.message && <p role="status">{financial.message}</p>}{financial.issues.map(issue => <p role="alert" key={issue}>{issue}</p>)}
+          <label className="rw-field">Kỳ Financial Engine<select value={reportId} onChange={e => { invalidate(); setReportId(e.target.value); }}><option value="">Chọn kỳ báo cáo</option>{financial.dataset?.reports.map(r => <option key={r.id} value={r.id}>{r.id} · {r.kind} · {r.scope}</option>)}</select></label>
+          <label className="rw-field">Giả định Bear/Base/Bull JSON · tùy chọn<textarea rows={3} maxLength={20000} value={scenariosJson} onChange={e => { invalidate(); setScenariosJson(e.target.value); }} placeholder="Dán mảng 3 kịch bản; bỏ trống để không xuất định giá." /></label>
+          <label className="rw-mock-option"><input type="checkbox" checked={attachFinancial} onChange={e => { invalidate(); setAttachFinancial(e.target.checked); }} />Đưa kết quả Financial Engine vào hồ sơ</label>
+        </details>
         <label className="rw-mock-option"><input type="checkbox" checked={includeMock} onChange={(e) => { setIncludeMock(e.target.checked); invalidate(); }} /><span><strong>Thêm dữ liệu MOCK để luyện tập</strong><small>Dữ liệu minh họa từ dashboard. Toàn bộ hồ sơ sẽ được đánh dấu MOCK; không dùng để kết luận đầu tư.</small></span></label>
         <div className="rw-actions"><p className="rw-help">Dữ liệu minh họa mặc định được loại khỏi hồ sơ.</p><Button onClick={preparePacket} disabled={question.trim().length < 5 || pendingSource}>Tạo hồ sơ nghiên cứu <ArrowRight size={15} aria-hidden="true" /></Button></div>
       </div></Panel>}
       {step === 1 && packet && <Panel title="02 · Chuyển hồ sơ sang ChatGPT" subtitle="Dùng tài khoản ChatGPT hiện tại của bạn."><div className="rw-panel-body">
-        <div className="rw-packet-meta"><FileCheck2 size={20} aria-hidden="true" /><div><strong>Hồ sơ {packet.symbol}</strong><code>{packet.id}</code></div><span className={`badge ${includeMock ? "mock-badge" : ""}`}>{includeMock ? "MOCK · LUYỆN TẬP" : "NGUỒN DO BẠN CUNG CẤP"}</span></div>
+        <div className="rw-packet-meta"><FileCheck2 size={20} aria-hidden="true" /><div><strong>Hồ sơ {packet.symbol}</strong><code>{packet.id}</code></div><span className={`badge ${packet.mode === "mock_practice" ? "mock-badge" : ""}`}>{packet.mode === "mock_practice" ? "MOCK · LUYỆN TẬP" : "NGUỒN DO BẠN CUNG CẤP"}</span></div>
         <ol className="rw-instructions"><li>Sao chép hướng dẫn cùng hồ sơ bên dưới.</li><li>Mở ChatGPT, dán nội dung và tự gửi yêu cầu.</li><li>Sao chép JSON ChatGPT trả về để kiểm tra ở bước 3.</li></ol>
         <div className="rw-transfer-actions"><Button onClick={copyPrompt}><ClipboardCopy size={15} aria-hidden="true" /> Sao chép hồ sơ + prompt</Button><Button variant="outline" onClick={() => downloadText(`${packet.symbol}-research-packet.txt`, prompt)}><Download size={15} aria-hidden="true" /> Tải hồ sơ .txt</Button><Button asChild variant="outline"><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Mở ChatGPT <ExternalLink size={14} aria-hidden="true" /></a></Button></div>
         <p className="rw-help rw-transfer-note">Website không tự gửi tài liệu. Nội dung sẽ được chuyển tới ChatGPT khi bạn dán và gửi trong cuộc trò chuyện.</p>
         <details className="rw-prompt-preview"><summary>Xem toàn bộ hồ sơ và hướng dẫn</summary><label className="sr-only" htmlFor="research-prompt">Hồ sơ và prompt gửi ChatGPT</label><textarea id="research-prompt" readOnly value={prompt} rows={14} /></details>
         <div className="rw-section-label"><h3>Nguồn trong hồ sơ</h3><span className="badge">{packet.sources.length} NGUỒN</span></div><PacketSources packet={packet} />
+        {packet.financialEvidence && <details className="rw-evidence-editor"><summary>Kết quả tính toán và chất lượng dữ liệu</summary>
+          <p>CALCULATED · {packet.financialEvidence.report.id} · {packet.financialEvidence.report.scope} · {packet.financialEvidence.currency}. Nguồn chưa được xác minh. Percent dùng phân số: 0.4 = 40%.</p>
+          <ul>{packet.financialEvidence.quality.issues.slice(0, 10).map((issue, i) => <li key={i}>{issue.severity}: {issue.message}</li>)}</ul>
+          {packet.financialEvidence.ratios.map(r => <details key={r.id}><summary>{r.label}: {r.result.ok ? `${r.result.value} ${r.unit}` : `Khóa · ${r.result.code}`}</summary><p>{r.formula}</p><p>{r.result.ok ? r.limitations : r.result.issues.join(" ")}</p><pre>{JSON.stringify(r.inputs, null, 2)}</pre></details>)}
+          <p>{packet.financialEvidence.valuation.length} kịch bản định giá đính kèm. Giả định, ngày định giá, cảnh báo và trạng thái khóa nằm trong E01; không phải dự báo giá.</p>
+        </details>}
         <div className="rw-actions"><Button variant="ghost" onClick={() => setStep(0)}>Sửa hồ sơ</Button><Button onClick={() => { setStep(2); setFeedback(""); }}>Tôi đã có phản hồi <ArrowRight size={15} aria-hidden="true" /></Button></div>
       </div></Panel>}
       {step === 2 && packet && <Panel title="03 · Kiểm tra báo cáo từ ChatGPT" subtitle="Đối chiếu định dạng, mã hồ sơ và mã nguồn trích dẫn."><div className="rw-panel-body">
